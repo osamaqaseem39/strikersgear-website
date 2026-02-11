@@ -771,6 +771,27 @@ class ApiClient {
     }))
   }
 
+  /**
+   * Generic banner fetcher by "position".
+   * Currently the backend only exposes a single banners collection,
+   * so we ignore the position and reuse hero banners. This keeps
+   * MobileHero and any other callers working without extra backend logic.
+   */
+  async getBannersByPosition(
+    _position: 'hero' | string,
+  ): Promise<Array<{
+    _id: string
+    title: string
+    subtitle?: string
+    description?: string
+    imageUrl: string
+    altText?: string
+    linkUrl?: string
+    linkText?: string
+  }>> {
+    return this.getHeroBanners()
+  }
+
   // Shipping "API" - computed client-side (no backend route yet)
   async calculateShipping(data: {
     shippingAddress: {
