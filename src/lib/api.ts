@@ -746,7 +746,7 @@ class ApiClient {
   // Banner API - hero banners (active only)
   async getHeroBanners(): Promise<Array<{
     _id: string
-    title?: string
+    title: string
     subtitle?: string
     description?: string
     imageUrl: string
@@ -760,7 +760,8 @@ class ApiClient {
 
     return response.map((banner: any) => ({
       _id: banner._id,
-      title: banner.title,
+      // Ensure title is always a string to satisfy Hero's Banner type
+      title: banner.title || banner.subtitle || 'Hero banner',
       subtitle: banner.subtitle,
       description: banner.description,
       imageUrl: banner.image,
