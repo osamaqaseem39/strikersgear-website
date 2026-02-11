@@ -91,8 +91,8 @@ export default function Header({ onMenuClick, isMobileMenuOpen, onFilterClick }:
                   src="/images/logo.png"
                   alt="Striker Gear"
                   width={100}
-                  height={100}
-                  className="h-20 w-auto"
+                  height={40}
+                  className="h-10 w-auto sm:h-12"
                 />
               </a>
             </div>

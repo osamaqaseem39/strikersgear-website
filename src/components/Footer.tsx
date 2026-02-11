@@ -47,9 +47,9 @@ export default function Footer() {
                 <Image
                   src="/images/logo.png"
                   alt="Striker Gear"
-                  width={120}
-                  height={120}
-                  className="h-16 w-auto"
+                  width={100}
+                  height={40}
+                  className="h-10 w-auto"
                 />
               </Link>
             </div>
