@@ -40,7 +40,7 @@ export default function NewHomepage() {
         setLoading(true)
         const [categoriesData, bannersData] = await Promise.all([
           apiClient.getCategories(),
-          apiClient.getHeroBanners().catch(() => [])
+          apiClient.getBannersByPosition('hero').catch(() => [])
         ])
         setCategories(categoriesData || [])
         setBanners(bannersData || [])
@@ -74,6 +74,15 @@ export default function NewHomepage() {
       (product.rating && product.rating >= 4.0)
     )
     .slice(0, 6)
+
+  const getProductImage = (product: Product) => {
+    return (
+      (Array.isArray(product.images) && product.images[0]) ||
+      product.featuredImage ||
+      (Array.isArray(product.gallery) && product.gallery[0]) ||
+      '/images/logo.png'
+    )
+  }
 
   if (loading || productsLoading) {
     return (
@@ -137,7 +146,62 @@ export default function NewHomepage() {
         </motion.div>
       </section>
 
+      {/* All Products Section */}
+      {allProducts.length > 0 && (
+        <section className="py-16 bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
+              className="text-center mb-10"
+            >
+              <h2 className="text-3xl lg:text-4xl font-serif font-bold text-gray-900 mb-3">
+                Our Football Gear
+              </h2>
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                Browse football cleats, grip socks and grippers, jerseys, shin pads, and performance socks from our latest drops.
+              </p>
+            </motion.div>
 
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {allProducts.slice(0, 12).map((product, index) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: index * 0.05 }}
+                >
+                  <ProductCard
+                    id={product._id}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    image={getProductImage(product)}
+                    category={product.categories?.[0] || (typeof product.category === 'string' ? product.category : (product as any).category?.name) || 'Football'}
+                    brand={product.brand}
+                    isNew={product.isNew}
+                    isOnSale={product.isSale}
+                    slug={product.slug}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="mt-10 text-center">
+              <Link
+                href="/shop"
+                className="inline-flex items-center gap-2 px-8 py-3 border border-gray-300 rounded-full text-sm font-semibold text-gray-900 hover:bg-gray-900 hover:text-white transition-colors"
+              >
+                View all products
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Categories Section */}
       {categories.length > 0 && (
