@@ -300,15 +300,17 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
       })
     }
 
-    if (product.occasion) {
-      if (!profile.preferences.occasion.includes(product.occasion)) {
-        profile.preferences.occasion.push(product.occasion)
+    const productOccasion = (product as any).occasion
+    if (productOccasion) {
+      if (!profile.preferences.occasion.includes(productOccasion)) {
+        profile.preferences.occasion.push(productOccasion)
       }
     }
 
-    if (product.season) {
-      if (!profile.preferences.season.includes(product.season)) {
-        profile.preferences.season.push(product.season)
+    const productSeason = (product as any).season
+    if (productSeason) {
+      if (!profile.preferences.season.includes(productSeason)) {
+        profile.preferences.season.push(productSeason)
       }
     }
 

@@ -23,7 +23,7 @@ export interface Product {
   shortDescription?: string
   sizeInfo?: string
   description?: string
-  sizeChart?: string
+  sizeChart?: any
   discountPercentage?: number
   attributes?: { name: string; value: string }[]
   features?: string[]
@@ -32,6 +32,7 @@ export interface Product {
   images: string[]
   price: number
   category: string
+  categories?: string[]
   brand?: string
   isActive?: boolean
   createdAt: string

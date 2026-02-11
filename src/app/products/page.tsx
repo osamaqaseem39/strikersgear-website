@@ -43,7 +43,11 @@ export default function ProductsPage() {
 
     // Size filter
     if (filters.sizes && filters.sizes.length > 0) {
-      const productSizes = product.availableSizes || product.attributes?.sizes || []
+      const productSizes =
+        product.availableSizes ||
+        (product as any).sizes ||
+        (product as any).attributes?.sizes ||
+        []
       if (!filters.sizes.some(size => productSizes.includes(size))) return false
     }
 
@@ -59,7 +63,7 @@ export default function ProductsPage() {
 
     // Occasion filter
     if ((filters as any).occasions && (filters as any).occasions.length > 0) {
-      const productOccasions = product.occasion ? [product.occasion] : []
+      const productOccasions = product.tags || []
       if (!(filters as any).occasions.some((occ: string) => productOccasions.includes(occ))) return false
     }
 

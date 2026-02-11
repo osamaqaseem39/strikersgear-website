@@ -772,22 +772,6 @@ export default function ProductPage() {
                             </div>
                           )}
 
-                          {/* Occasion */}
-                          {product.occasion && (
-                            <div>
-                              <span className="text-sm font-semibold text-gray-700">Occasion:</span>
-                              <span className="ml-2 text-gray-600">{product.occasion}</span>
-                            </div>
-                          )}
-
-                          {/* Season */}
-                          {product.season && (
-                            <div>
-                              <span className="text-sm font-semibold text-gray-700">Season:</span>
-                              <span className="ml-2 text-gray-600">{product.season}</span>
-                            </div>
-                          )}
-
                           {/* Fabric */}
                           {(product as any).fabric && (
                             <div>
@@ -844,8 +828,6 @@ export default function ProductPage() {
                               })()],
                               ['Brand', product.brand && product.brand !== 'Unknown' ? product.brand : '—'],
                               ['Collection', (product as any).collectionName],
-                              ['Occasion', product.occasion],
-                              ['Season', product.season],
                               ['Fabric', (product as any).fabric],
                               ['Pattern', (product as any).pattern],
                               ['Sleeve Length', (product as any).sleeveLength],

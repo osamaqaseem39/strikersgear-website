@@ -629,19 +629,6 @@ export default function MobileProductPage() {
                     </div>
                   )}
 
-                  {product.occasion && (
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-xs font-semibold text-gray-700">Occasion:</span>
-                      <span className="text-xs text-gray-600">{product.occasion}</span>
-                    </div>
-                  )}
-
-                  {product.season && (
-                    <div className="flex justify-between py-2 border-b border-gray-100">
-                      <span className="text-xs font-semibold text-gray-700">Season:</span>
-                      <span className="text-xs text-gray-600">{product.season}</span>
-                    </div>
-                  )}
                 </div>
               </div>
 
@@ -677,8 +664,6 @@ export default function MobileProductPage() {
                   })()],
                   ['Brand', product.brand && product.brand !== 'Unknown' ? product.brand : '—'],
                   ['Collection', (product as any).collectionName],
-                  ['Occasion', product.occasion],
-                  ['Season', product.season],
                   ['Fabric', (product as any).fabric],
                 ].filter(([k, v]) => !!v && v !== '—').map(([k, v]) => (
                   <div key={k as string} className="flex justify-between py-2 border-b border-gray-100">

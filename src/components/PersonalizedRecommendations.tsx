@@ -90,7 +90,11 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
     // Filter by size preferences
     if (userProfile.preferences.sizePreferences.length > 0) {
       filtered = filtered.filter(product => {
-        const productSizes = product.availableSizes || product.attributes?.sizes || []
+        const productSizes =
+          product.availableSizes ||
+          (product as any).sizes ||
+          (product as any).attributes?.sizes ||
+          []
         return userProfile.preferences.sizePreferences.some(size =>
           productSizes.includes(size)
         )
@@ -112,7 +116,7 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
     // Filter by occasion
     if (userProfile.preferences.occasion.length > 0) {
       filtered = filtered.filter(product => {
-        const productOccasion = product.occasion || ''
+        const productOccasion = (product as any).occasion || ''
         return userProfile.preferences.occasion.some(occ =>
           String(productOccasion).toLowerCase().includes(String(occ).toLowerCase())
         )
