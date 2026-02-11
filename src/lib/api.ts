@@ -14,64 +14,48 @@ export const getCorsConfig = (): RequestInit => ({
 // No sample data - API only
 
 // Product interface for landing page
+// NOTE: This interface is intentionally limited to fields that exist
+// on the backend Product model (plus Mongoose timestamps).
 export interface Product {
   _id: string
   name: string
-  slug: string
-  description: string
+  slug?: string
   shortDescription?: string
+  sizeInfo?: string
+  description?: string
+  sizeChart?: string
+  discountPercentage?: number
+  attributes?: { name: string; value: string }[]
+  features?: string[]
+  featuredImage?: string
+  gallery?: string[]
+  images?: string[]
   price: number
+  category: string
+  brand?: string
+  isActive?: boolean
+  createdAt?: string
+  updatedAt?: string
+
+  // Legacy/UI-only fields that are not part of the core
+  // backend Product schema today. These may be populated
+  // in the future or derived on the client, but are not
+  // guaranteed by the backend.
   originalPrice?: number
   salePrice?: number
-  images: string[]
-  category: string
-  categories?: string[]
-  brand: string
-  status: 'draft' | 'published' | 'archived'
-  inStock: boolean
-  stockQuantity: number
-  stockCount?: number
-  isNew?: boolean
   isSale?: boolean
+  isNew?: boolean
   rating?: number
   reviews?: number
   availableSizes?: string[]
   colors?: string[]
   sizeChartImageUrl?: string
-  features?: string[]
   bodyType?: string[]
-  occasion?: string
-  season?: string
-  sizeChart?: {
-    _id: string
-    name: string
-    description?: string
-    sizeType: 'numeric' | 'alphabetic' | 'custom'
-    sizes: Array<{
-      size: string
-      measurements: {
-        bust?: string
-        waist?: string
-        hips?: string
-        shoulder?: string
-        sleeveLength?: string
-        length?: string
-        custom?: Record<string, string>
-      }
-    }>
-    imageUrl?: string
-    imageAltText?: string
-    isActive: boolean
-  }
-  attributes?: {
-    color?: string
-    sizes?: string[]
-    material?: string
-    gender?: string
-  }
   tags?: string[]
-  createdAt: string
-  updatedAt: string
+  status?: 'draft' | 'published' | 'archived'
+  inStock?: boolean
+  stockQuantity?: number
+  stockCount?: number
 }
 
 export interface ProductFilters {
@@ -146,12 +130,11 @@ class ApiClient {
     const placeholder = '/images/logo.png'
 
     // Normalize images from multiple possible shapes
-    // Possible shapes: string[], [{ url }], [{ imageUrl }], [{ path }], [ObjectId]
-    let imageUrls: string[] = []
+    let imageUrls: string[] | undefined = undefined
     if (Array.isArray(raw?.images)) {
+      imageUrls = []
       for (const img of raw.images) {
         if (typeof img === 'string') {
-          // If it looks like a URL/path, accept; if it looks like an ObjectId, skip
           const looksLikeObjectId = /^[a-f\d]{24}$/i.test(img)
           if (!looksLikeObjectId) {
             imageUrls.push(img)
@@ -163,148 +146,47 @@ class ApiClient {
           if (candidate) imageUrls.push(candidate)
         }
       }
-    }
-    if (imageUrls.length === 0) {
-      imageUrls = [placeholder]
+      if (imageUrls.length === 0) {
+        imageUrls = undefined
+      }
     }
 
-    // Normalize brand to a readable string; avoid showing ObjectId
-    let brandName: string = ''
+    // Normalize brand to a readable string where possible; avoid exposing raw ObjectIds
+    let brand: string | undefined
     if (typeof raw?.brand === 'string') {
       const looksLikeObjectId = /^[a-f\d]{24}$/i.test(raw.brand)
-      brandName = looksLikeObjectId ? '' : raw.brand
+      brand = looksLikeObjectId ? undefined : raw.brand
     } else if (raw?.brand && typeof raw.brand === 'object') {
-      brandName = raw.brand.name || raw.brand.slug || raw.brand._id || ''
-    }
-    const brandDisplay = brandName && String(brandName).trim() !== '' ? brandName : ''
-
-    // Normalize categories to human-readable names; preserve IDs for filtering
-    let categoryNames: string[] | undefined = undefined
-    let categoryIds: string[] | undefined = undefined
-    if (Array.isArray(raw?.categories)) {
-      const isObjectId = (s: string) => /^[a-f\d]{24}$/i.test(s)
-      const names: string[] = []
-      const ids: string[] = []
-      
-      raw.categories.forEach((cat: any) => {
-        if (!cat) return
-        if (typeof cat === 'string') {
-          if (isObjectId(cat)) {
-            // Preserve category ID for filtering
-            ids.push(cat)
-          } else {
-            // It's already a name
-            names.push(cat)
-          }
-        } else if (typeof cat === 'object') {
-          const label = cat.name || cat.slug || ''
-          if (label && !isObjectId(String(label))) {
-            names.push(String(label))
-          }
-          // Also preserve the ID if available
-          if (cat._id && isObjectId(cat._id)) {
-            ids.push(cat._id)
-          }
-        }
-      })
-      
-      // Use names if available, otherwise preserve IDs for filtering
-      categoryNames = names.length > 0 ? names : undefined
-      categoryIds = ids.length > 0 ? ids : undefined
+      brand = raw.brand.name || raw.brand.slug || undefined
     }
 
-    // Normalize price/originalPrice/salePrice logic
-    // Priority: salePrice (if lower) > price > originalPrice
-    let normalizedPrice = raw?.price || 0
-    let normalizedOriginalPrice = raw?.originalPrice
-    let normalizedSalePrice = raw?.salePrice
-    let normalizedIsSale = raw?.isSale || false
-    
-    // If salePrice exists, mark product as on sale
-    if (normalizedSalePrice !== undefined && typeof normalizedSalePrice === 'number' && normalizedSalePrice > 0) {
-      normalizedIsSale = true
-      
-      // If salePrice is lower than price, use it as the display price
-      if (normalizedSalePrice < normalizedPrice) {
-        // Use the higher of price or originalPrice as the original price
-        normalizedOriginalPrice = normalizedOriginalPrice 
-          ? Math.max(normalizedOriginalPrice, normalizedPrice)
-          : normalizedPrice
-        normalizedPrice = normalizedSalePrice
-      }
-    } else if (normalizedOriginalPrice && normalizedOriginalPrice < normalizedPrice) {
-      // If originalPrice is less than price, swap them
-      const temp = normalizedPrice
-      normalizedPrice = normalizedOriginalPrice
-      normalizedOriginalPrice = temp
-    }
-    
-    // Ensure originalPrice is only shown if it's greater than the display price
-    if (normalizedOriginalPrice && normalizedOriginalPrice <= normalizedPrice) {
-      normalizedOriginalPrice = undefined
-    }
-
-    // Normalize colors to human-readable strings
-    let normalizedColors: string[] | undefined = undefined
-    if (Array.isArray(raw?.colors)) {
-      const isObjectId = (s: string) => /^[a-f\d]{24}$/i.test(s)
-      normalizedColors = raw.colors
-        .map((c: any) => {
-          if (!c) return null
-          if (typeof c === 'string') {
-            return isObjectId(c) ? null : c
-          }
-          if (typeof c === 'object') {
-            const label = c.name || c.colorName || c.label || c.title || c.value || ''
-            if (label && !isObjectId(String(label))) return String(label)
-            // As a last resort, avoid exposing raw ObjectId colorId
-            if (c.colorId && !isObjectId(String(c.colorId))) return String(c.colorId)
-            return null
-          }
-          return null
-        })
-        .filter((v: any) => typeof v === 'string' && v.trim() !== '')
-    }
-
-    // Normalize sizes from multiple possible locations
-    let normalizedSizes: string[] | undefined = undefined
-    // Check availableSizes first
-    if (Array.isArray(raw?.availableSizes) && raw.availableSizes.length > 0) {
-      normalizedSizes = raw.availableSizes.filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
-    }
-    // Check sizes field
-    else if (Array.isArray(raw?.sizes) && raw.sizes.length > 0) {
-      normalizedSizes = raw.sizes.filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
-    }
-    // Check sizeChart.sizes
-    else if (raw?.sizeChart && Array.isArray(raw.sizeChart.sizes) && raw.sizeChart.sizes.length > 0) {
-      normalizedSizes = raw.sizeChart.sizes
-        .map((s: any) => {
-          if (typeof s === 'string') return s
-          if (typeof s === 'object' && s.size) return s.size
-          return null
-        })
-        .filter((s: any): s is string => s && typeof s === 'string' && s.trim() !== '')
-    }
-    // Check attributes.sizes
-    else if (raw?.attributes?.sizes && Array.isArray(raw.attributes.sizes) && raw.attributes.sizes.length > 0) {
-      normalizedSizes = raw.attributes.sizes.filter((s: any) => s && typeof s === 'string' && s.trim() !== '')
-    }
+    // Category is stored as a single ObjectId in the backend
+    const category: string = typeof raw?.category === 'string'
+      ? raw.category
+      : (raw?.category?._id || raw?.category || '')
 
     return {
-      ...raw,
-      images: imageUrls,
-      brand: brandDisplay || 'Unknown',
-      categories: categoryNames || categoryIds || raw?.categories,
-      // Preserve category field - use first category name or ID
-      category: categoryNames?.[0] || categoryIds?.[0] || raw?.category || '',
-      price: normalizedPrice,
-      originalPrice: normalizedOriginalPrice,
-      salePrice: normalizedSalePrice,
-      isSale: normalizedIsSale,
-      colors: normalizedColors ?? raw?.colors,
-      availableSizes: normalizedSizes ?? raw?.availableSizes ?? raw?.sizes,
-    } as Product
+      _id: String(raw._id),
+      name: raw.name,
+      slug: raw.slug,
+      shortDescription: raw.shortDescription,
+      sizeInfo: raw.sizeInfo,
+      description: raw.description,
+      sizeChart: raw.sizeChart,
+      discountPercentage: raw.discountPercentage,
+      attributes: raw.attributes,
+      features: raw.features,
+      featuredImage: raw.featuredImage,
+      gallery: raw.gallery,
+      images: imageUrls ?? raw.images ?? [placeholder],
+      sizeChartImageUrl: raw.sizeChartImageUrl,
+      price: raw.price,
+      category,
+      brand,
+      isActive: raw.isActive,
+      createdAt: raw.createdAt,
+      updatedAt: raw.updatedAt,
+    }
   }
 
   private async request<T>(

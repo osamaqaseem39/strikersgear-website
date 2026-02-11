@@ -108,7 +108,7 @@ export default function CartDrawer() {
                         )}
                         <div className="flex items-center justify-between">
                           <span className="text-sm font-bold text-primary-600">
-                            ₨{(item.price * item.quantity).toLocaleString()}
+                            PKR {(item.price * item.quantity).toLocaleString()}
                           </span>
                           <div className="flex items-center gap-2">
                             {/* Quantity Controls */}
@@ -152,7 +152,7 @@ export default function CartDrawer() {
                 <div className="flex items-center justify-between">
                   <span className="text-lg font-semibold text-gray-900">Total:</span>
                   <span className="text-2xl font-bold text-primary-600">
-                    ₨{total.toLocaleString()}
+                    PKR {total.toLocaleString()}
                   </span>
                 </div>
 

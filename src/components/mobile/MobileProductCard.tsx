@@ -119,11 +119,11 @@ export default function MobileProductCard({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <span className="text-sm font-bold text-primary-600 whitespace-nowrap">
-                ₨{typeof price === 'number' ? price.toLocaleString() : '0'}
+                PKR {typeof price === 'number' ? price.toLocaleString() : '0'}
               </span>
               {originalPrice && typeof originalPrice === 'number' && originalPrice > price && (
                 <span className="text-[10px] text-gray-400 line-through whitespace-nowrap">
-                  ₨{originalPrice.toLocaleString()}
+                  PKR {originalPrice.toLocaleString()}
                 </span>
               )}
             </div>

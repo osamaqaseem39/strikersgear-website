@@ -386,7 +386,7 @@ export default function MobileCheckoutPage() {
                       ) : shipping === 0 ? (
                         <span className="text-xs font-bold text-green-600">Free</span>
                       ) : (
-                        <span className="text-xs font-bold text-primary-600">₨{shipping.toLocaleString()}</span>
+                        <span className="text-xs font-bold text-primary-600">PKR {shipping.toLocaleString()}</span>
                       )}
                     </div>
                   </div>
@@ -464,7 +464,7 @@ export default function MobileCheckoutPage() {
                       </p>
                     )}
                     <p className="text-xs font-medium text-primary-600 mt-1">
-                      ₨{(item.price * item.quantity).toLocaleString()} x{item.quantity}
+                      PKR {(item.price * item.quantity).toLocaleString()} x{item.quantity}
                     </p>
                   </div>
                 </div>
@@ -475,7 +475,7 @@ export default function MobileCheckoutPage() {
             <div className="space-y-2 pt-4 border-t border-gray-200">
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Subtotal</span>
-                <span>₨{total.toLocaleString()}</span>
+                <span>PKR {total.toLocaleString()}</span>
               </div>
               <div className="flex justify-between text-sm text-gray-600">
                 <span>Shipping</span>
@@ -490,13 +490,13 @@ export default function MobileCheckoutPage() {
                   ) : shipping === 0 ? (
                     <span className="text-green-600 font-medium">Free</span>
                   ) : (
-                    `₨${shipping.toLocaleString()}`
+                    `PKR ${shipping.toLocaleString()}`
                   )}
                 </span>
               </div>
-              <div className="flex justify-between text-base font-bold text-gray-900 pt-2 border-t border-gray-200">
+              <div className="flex justifyBetween text-base font-bold text-gray-900 pt-2 border-t border-gray-200">
                 <span>Total</span>
-                <span className="text-primary-600">₨{finalTotal.toLocaleString()}</span>
+                <span className="text-primary-600">PKR {finalTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>

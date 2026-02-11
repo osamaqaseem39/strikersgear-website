@@ -592,11 +592,11 @@ export default function ShopPage() {
                       <div className="flex items-center justify-between gap-1 sm:gap-2">
                         <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
                           <span className="text-sm sm:text-base lg:text-lg font-bold text-primary-600 whitespace-nowrap">
-                            ₨{typeof product.price === 'number' ? product.price.toLocaleString() : '0'}
+                            PKR {typeof product.price === 'number' ? product.price.toLocaleString() : '0'}
                           </span>
                           {product.originalPrice && typeof product.originalPrice === 'number' && product.originalPrice > product.price && (
                             <span className="text-[10px] sm:text-xs lg:text-sm text-gray-400 line-through whitespace-nowrap">
-                              ₨{product.originalPrice.toLocaleString()}
+                              PKR {product.originalPrice.toLocaleString()}
                             </span>
                           )}
                         </div>

@@ -89,7 +89,7 @@ export default function Header({ onMenuClick, isMobileMenuOpen, onFilterClick }:
               <a href="/" className="flex items-center">
                 <Image
                   src="/images/logo.png"
-                  alt="Shes Trends"
+                  alt="Striker Gear"
                   width={100}
                   height={100}
                   className="h-20 w-auto"
@@ -260,7 +260,7 @@ export default function Header({ onMenuClick, isMobileMenuOpen, onFilterClick }:
               <a href="/" className="flex items-center justify-center">
                 <Image
                   src="/images/logo.png"
-                  alt="Shes Trends"
+                  alt="Striker Gear"
                   width={100}
                   height={40}
                   className="h-10 w-auto"

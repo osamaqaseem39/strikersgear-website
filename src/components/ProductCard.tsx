@@ -93,11 +93,11 @@ export default function ProductCard({
           <div className="flex items-center justify-between gap-1 sm:gap-2">
             <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-1">
               <span className="text-sm sm:text-base font-semibold text-primary-600 whitespace-nowrap">
-                ₨{typeof price === 'number' ? price.toLocaleString() : '0'}
+                PKR {typeof price === 'number' ? price.toLocaleString() : '0'}
               </span>
               {originalPrice && typeof originalPrice === 'number' && originalPrice > price && (
                 <span className="text-[10px] sm:text-xs text-gray-400 line-through whitespace-nowrap">
-                  ₨{originalPrice.toLocaleString()}
+                  PKR {originalPrice.toLocaleString()}
                 </span>
               )}
             </div>

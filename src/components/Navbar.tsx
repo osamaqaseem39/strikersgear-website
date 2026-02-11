@@ -24,7 +24,7 @@ export default function Navbar() {
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
-            <h1 className="text-2xl font-serif font-bold text-gradient">Shes Trends</h1>
+            <h1 className="text-2xl font-serif font-bold text-gradient">Striker Gear</h1>
           </div>
 
           {/* Desktop Navigation */}

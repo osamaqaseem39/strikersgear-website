@@ -22,12 +22,9 @@ const footerLinks = {
   ]
 }
 
-// Update these with your actual social media URLs
 const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: '#' },
-  { name: 'Twitter', icon: Twitter, href: '#' },
-  { name: 'Instagram', icon: Instagram, href: '#' },
-  { name: 'YouTube', icon: Youtube, href: '#' }
+  { name: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/share/18ABiKbjsu/' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/stri_kers_gear?igsh=OXVsYXcxY3BwOThm' },
 ]
 
 export default function Footer() {
@@ -49,7 +46,7 @@ export default function Footer() {
               <Link href="/" className="flex items-center">
                 <Image
                   src="/images/logo.png"
-                  alt="Shes Trends"
+                  alt="Striker Gear"
                   width={120}
                   height={120}
                   className="h-16 w-auto"
@@ -153,7 +150,7 @@ export default function Footer() {
             transition={{ duration: 0.6 }}
             className="flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm"
           >
-            <p>&copy; 2024 Shes Trends. All rights reserved.</p>
+            <p>&copy; 2024 Striker Gear. All rights reserved.</p>
             <p className="mt-2 md:mt-0">Crafted with ❤️ for the sophisticated woman</p>
           </motion.div>
         </div>

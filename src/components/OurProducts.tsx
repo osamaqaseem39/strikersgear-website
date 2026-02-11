@@ -365,13 +365,13 @@ export default function OurProducts() {
                                   <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
                                       <span className="text-base font-semibold text-primary-600">
-                                        ₨{typeof product.price === 'number' ? product.price.toLocaleString() : '0'}
+                                        PKR {typeof product.price === 'number' ? product.price.toLocaleString() : '0'}
                                       </span>
                                       {product.originalPrice && 
                                        typeof product.originalPrice === 'number' && 
                                        product.originalPrice > product.price && (
                                         <span className="text-xs text-gray-400 line-through">
-                                          ₨{product.originalPrice.toLocaleString()}
+                                          PKR {product.originalPrice.toLocaleString()}
                                         </span>
                                       )}
                                     </div>

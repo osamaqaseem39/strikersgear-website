@@ -159,7 +159,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             <div className="p-4">
               {/* Header */}
               <div className="flex items-center justify-between mb-6">
-                <h2 className="text-lg font-serif font-bold text-gradient">Shes Trends</h2>
+                <h2 className="text-lg font-serif font-bold text-gradient">Striker Gear</h2>
                 <button
                   onClick={onClose}
                   className="p-2 text-gray-500 hover:text-gray-700"

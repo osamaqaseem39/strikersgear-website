@@ -111,7 +111,7 @@ export default function ProductShowcase() {
                     {/* Product Info */}
                     <div className="p-2 lg:p-4">
                       <div className="text-xs lg:text-sm text-primary-600 font-medium mb-1">
-                        AS LOW AS ₨{product.price?.toLocaleString() || '0'}
+                        AS LOW AS PKR {product.price?.toLocaleString() || '0'}
                       </div>
                       <h3 className="font-medium text-gray-900 text-xs lg:text-sm">{product.name}</h3>
                     </div>

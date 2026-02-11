@@ -454,12 +454,12 @@ export default function CheckoutPage() {
                           className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                         />
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">
                             Province * {formData.province && formData.city && !calculatingShipping && (
                               <span className="text-xs text-primary-600 ml-2">
-                                (Delivery: ₨{shipping === 0 ? 'Free' : shipping.toLocaleString()})
+                                (Delivery: PKR {shipping === 0 ? 'Free' : shipping.toLocaleString()})
                               </span>
                             )}
                           </label>
@@ -553,12 +553,12 @@ export default function CheckoutPage() {
                                 <span className="text-sm font-bold text-green-600">Free Shipping</span>
                               ) : (
                                 <span className="text-sm font-bold text-primary-600">
-                                  ₨{shipping.toLocaleString()}
+                                  PKR {shipping.toLocaleString()}
                                 </span>
                               )}
                               {!calculatingShipping && freeShippingThreshold && total < freeShippingThreshold && (
                                 <p className="text-xs text-gray-500 mt-1">
-                                  Free shipping on orders over ₨{freeShippingThreshold.toLocaleString()}
+                                  Free shipping on orders over PKR {freeShippingThreshold.toLocaleString()}
                                 </p>
                               )}
                             </div>
@@ -668,14 +668,14 @@ export default function CheckoutPage() {
                         <div className="flex-1 min-w-0">
                           <h3 className="text-sm font-semibold text-gray-900 truncate">{item.name}</h3>
                           {(item.size || item.color) && (
-                            <p className="text-xs text-gray-600">
+                          <p className="text-xs text-gray-600">
                               {item.size && <span>Size: {item.size}</span>}
                               {item.size && item.color && <span className="mx-1">•</span>}
                               {item.color && <span>Color: {item.color}</span>}
                             </p>
                           )}
                           <p className="text-sm font-medium text-primary-600 mt-1">
-                            ₨{(item.price * item.quantity).toLocaleString()}
+                            PKR {(item.price * item.quantity).toLocaleString()}
                           </p>
                         </div>
                         <div className="text-sm text-gray-600">x{item.quantity}</div>
@@ -687,7 +687,7 @@ export default function CheckoutPage() {
                   <div className="space-y-3 pt-6 border-t border-gray-200">
                     <div className="flex justify-between text-gray-600">
                       <span>Subtotal</span>
-                      <span>₨{total.toLocaleString()}</span>
+                      <span>PKR {total.toLocaleString()}</span>
                     </div>
                     <div className="flex justify-between text-gray-600">
                       <span>Shipping</span>
@@ -702,13 +702,13 @@ export default function CheckoutPage() {
                         ) : shipping === 0 ? (
                           <span className="text-green-600 font-medium">Free</span>
                         ) : (
-                          `₨${shipping.toLocaleString()}`
+                          `PKR ${shipping.toLocaleString()}`
                         )}
                       </span>
                     </div>
                     {formData.province && formData.city && !calculatingShipping && freeShippingThreshold && total < freeShippingThreshold && shipping > 0 && (
                       <p className="text-xs text-primary-600">
-                        Free shipping on orders over ₨{freeShippingThreshold.toLocaleString()}
+                        Free shipping on orders over PKR {freeShippingThreshold.toLocaleString()}
                       </p>
                     )}
                     {(!formData.province || !formData.city) && (
@@ -719,7 +719,7 @@ export default function CheckoutPage() {
                     <div className="flex justify-between text-lg font-bold text-gray-900 pt-3 border-t border-gray-200">
                       <span>Total</span>
                       <span className="text-primary-600">
-                        ₨{finalTotal.toLocaleString()}
+                        PKR {finalTotal.toLocaleString()}
                       </span>
                     </div>
                   </div>

@@ -25,7 +25,7 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: 'Shes Trends - Women\'s Fashion',
+  title: 'Striker Gear - Women\'s Fashion',
   description: 'Exclusive couture for the sophisticated woman. Discover our curated collection of women\'s fashion, designer dresses, and premium accessories.',
 }
 

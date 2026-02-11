@@ -352,15 +352,15 @@ export default function MobileProductPage() {
           {/* Price */}
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-2xl font-bold text-primary-600">
-              ₨{typeof product.price === 'number' ? product.price.toLocaleString() : '0'}
+              PKR {typeof product.price === 'number' ? product.price.toLocaleString() : '0'}
             </span>
             {product.originalPrice && typeof product.originalPrice === 'number' && product.originalPrice > product.price && (
               <>
                 <span className="text-base text-gray-400 line-through">
-                  ₨{product.originalPrice.toLocaleString()}
+                  PKR {product.originalPrice.toLocaleString()}
                 </span>
                 <span className="bg-secondary-500 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                  Save ₨{(product.originalPrice - product.price).toLocaleString()}
+                  Save PKR {(product.originalPrice - product.price).toLocaleString()}
                 </span>
               </>
             )}
