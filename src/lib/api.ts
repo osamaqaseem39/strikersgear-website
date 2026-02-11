@@ -34,8 +34,8 @@ export interface Product {
   category: string
   brand?: string
   isActive?: boolean
-  createdAt?: string
-  updatedAt?: string
+  createdAt: string
+  updatedAt: string
 
   // Legacy/UI-only fields that are not part of the core
   // backend Product schema today. These may be populated
