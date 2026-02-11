@@ -25,8 +25,9 @@ const manrope = Manrope({
 })
 
 export const metadata: Metadata = {
-  title: 'Striker Gear - Women\'s Fashion',
-  description: 'Exclusive couture for the sophisticated woman. Discover our curated collection of women\'s fashion, designer dresses, and premium accessories.',
+  title: 'Strikers Gear - Football Cleats & Sports Accessories',
+  description:
+    'Strikers Gear is your football-focused sports shop for premium cleats, grip socks and grippers, football jerseys, shin pads, and performance socks.',
 }
 
 export default function RootLayout({
