@@ -347,106 +347,31 @@ class ApiClient {
     }
   }
 
-  // Products API
+  // Products API - backed by simple `/products` endpoint
+  // Backend currently returns a plain array without pagination or advanced filters.
+  // We fetch all active products and apply pagination client-side.
   async getProducts(filters: ProductFilters = {}): Promise<PaginatedResponse<Product>> {
-    const params = new URLSearchParams()
+    const page = filters.page ?? 1
+    const limit = filters.limit ?? 100
 
-    // Normalize category/categories to backend expected repeated `categories` params
-    const { category, categories, brand, brands, colors, colorFamilies, occasion, occasions, season, seasons, bodyType, bodyTypes, ...rest } = filters as any
-    if (category) {
-      const categoryArray = Array.isArray(category) ? category : [category]
-      categoryArray.forEach((cat: string) => params.append('categories', cat))
-    }
-    if (Array.isArray(categories)) {
-      categories.forEach((cat: string) => params.append('categories', cat))
-    }
+    // Backend supports categoryId & activeOnly; for now we just request active products
+    const raw = await this.request<any[]>(`/products?activeOnly=true`)
+    const all = Array.isArray(raw) ? raw.map(this.normalizeProduct) : []
 
-    // Normalize brand/brands to backend expected repeated `brands` params
-    if (brand) {
-      const brandArray = Array.isArray(brand) ? brand : [brand]
-      brandArray.forEach((b: string) => params.append('brands', b))
-    }
-    if (Array.isArray(brands)) {
-      brands.forEach((b: string) => params.append('brands', b))
-    }
+    const total = all.length
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 1
+    const start = (page - 1) * limit
+    const end = start + limit
+    const data = all.slice(start, end)
 
-    // Normalize colors/colorFamilies to backend expected `colorFamilies` params
-    if (colors) {
-      const colorArray = Array.isArray(colors) ? colors : [colors]
-      colorArray.forEach((c: string) => params.append('colorFamilies', c))
-    }
-    if (Array.isArray(colorFamilies)) {
-      colorFamilies.forEach((c: string) => params.append('colorFamilies', c))
-    }
-
-    // Normalize occasion/occasions to backend expected `occasions` params
-    if (occasion) {
-      const occasionArray = Array.isArray(occasion) ? occasion : [occasion]
-      occasionArray.forEach((o: string) => params.append('occasions', o))
-    }
-    if (Array.isArray(occasions)) {
-      occasions.forEach((o: string) => params.append('occasions', o))
-    }
-
-    // Normalize season/seasons to backend expected `seasons` params
-    if (season) {
-      const seasonArray = Array.isArray(season) ? season : [season]
-      seasonArray.forEach((s: string) => params.append('seasons', s))
-    }
-    if (Array.isArray(seasons)) {
-      seasons.forEach((s: string) => params.append('seasons', s))
-    }
-
-    // Normalize bodyType/bodyTypes to backend expected `bodyTypes` params
-    if (bodyType) {
-      const bodyTypeArray = Array.isArray(bodyType) ? bodyType : [bodyType]
-      bodyTypeArray.forEach((bt: string) => params.append('bodyTypes', bt))
-    }
-    if (Array.isArray(bodyTypes)) {
-      bodyTypes.forEach((bt: string) => params.append('bodyTypes', bt))
-    }
-
-    // Only send supported keys to avoid 400s from backend validation
-    const allowedKeys = new Set([
-      'page',
-      'limit',
-      'search',
-      'minPrice',
-      'maxPrice',
-      'inStock',
-      'status',
-      'sizes',
-      'fabrics',
-      'collectionNames',
-      'designers',
-      'handwork',
-      'patterns',
-      'sleeveLengths',
-      'necklines',
-      'lengths',
-      'fits',
-      'ageGroups',
-      'isLimitedEdition',
-      'isCustomMade',
-      'sortBy',
-      'sortOrder',
-    ])
-    Object.entries(rest).forEach(([key, value]) => {
-      if (!allowedKeys.has(key)) return
-      if (value === undefined || value === null) return
-      if (Array.isArray(value)) {
-        value.forEach(v => params.append(key, v.toString()))
-      } else if (typeof value === 'boolean') {
-        params.append(key, value.toString())
-      } else {
-        params.append(key, value.toString())
-      }
-    })
-
-    const payload = await this.request<PaginatedResponse<any>>(`/products?${params.toString()}`)
     return {
-      ...payload,
-      data: (payload.data || []).map(this.normalizeProduct),
+      data,
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
     }
   }
 
@@ -508,7 +433,22 @@ class ApiClient {
   }
 
   async getProductBySlug(slug: string): Promise<Product> {
-    const raw = await this.request<any>(`/products/slug/${slug}`)
+    // Backend now supports slug field on products, but does not expose a dedicated slug endpoint.
+    // Strategy:
+    // 1) Try to resolve by slug from the active products list.
+    // 2) If not found, fall back to treating the slug as an ID (for backward compatibility).
+    const rawList = await this.request<any[]>(`/products?activeOnly=true`)
+    let raw = (rawList || []).find((p: any) => p.slug === slug)
+
+    // Fallback: if nothing matches by slug, try fetching directly by ID
+    if (!raw) {
+      try {
+        raw = await this.request<any>(`/products/${slug}`)
+      } catch {
+        throw new Error('Product not found')
+      }
+    }
+
     const normalized = this.normalizeProduct(raw)
     
     // Fallback: If brand is still an ObjectId, fetch the brand details
@@ -574,85 +514,87 @@ class ApiClient {
     return published.data
   }
 
-  async searchProducts(query: string, filters: Omit<ProductFilters, 'search'> = {}): Promise<PaginatedResponse<Product>> {
-    const params = new URLSearchParams()
-    // Backend expects `q` as the search query parameter
-    params.append('q', query)
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString())
-      }
-    })
+  async searchProducts(query: string, _filters: Omit<ProductFilters, 'search'> = {}): Promise<PaginatedResponse<Product>> {
+    // Simple client-side search over active products
+    const base = await this.getProducts({ page: 1, limit: 1000 })
+    const q = query.toLowerCase()
+    const matched = base.data.filter(p =>
+      p.name.toLowerCase().includes(q) ||
+      (p.description && p.description.toLowerCase().includes(q)) ||
+      (p.shortDescription && p.shortDescription.toLowerCase().includes(q))
+    )
 
-    const payload = await this.request<PaginatedResponse<any>>(`/products/search?${params.toString()}`)
     return {
-      ...payload,
-      data: (payload.data || []).map(this.normalizeProduct),
+      data: matched,
+      total: matched.length,
+      page: 1,
+      limit: matched.length || 1,
+      totalPages: 1,
+      hasNext: false,
+      hasPrev: false,
     }
   }
 
   async getPublishedProducts(filters: Omit<ProductFilters, 'status'> = {}): Promise<PaginatedResponse<Product>> {
-    const params = new URLSearchParams()
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString())
-      }
-    })
-
-    const suffix = params.toString() ? `?${params.toString()}` : ''
-    const payload = await this.request<PaginatedResponse<any>>(`/products/published${suffix}`)
-    return {
-      ...payload,
-      data: (payload.data || []).map(this.normalizeProduct),
-    }
+    // Backend does not distinguish draft/published; reuse getProducts
+    return this.getProducts(filters as ProductFilters)
   }
 
   async getProductsByCategory(categoryId: string, filters: Omit<ProductFilters, 'category'> = {}): Promise<PaginatedResponse<Product>> {
-    const params = new URLSearchParams()
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString())
+    const base = await this.getProducts({ page: 1, limit: 1000, ...filters })
+    const filtered = base.data.filter((p: any) => {
+      if (!p) return false
+      if (p.category === categoryId) return true
+      if (p.category && typeof p.category === 'object' && p.category._id === categoryId) return true
+      if (Array.isArray(p.categories)) {
+        return p.categories.some((cat: any) => {
+          if (!cat) return false
+          if (typeof cat === 'string') return cat === categoryId
+          if (typeof cat === 'object') return cat._id === categoryId
+          return false
+        })
       }
+      return false
     })
 
-    const payload = await this.request<PaginatedResponse<any>>(`/products/category/${categoryId}?${params.toString()}`)
     return {
-      ...payload,
-      data: (payload.data || []).map(this.normalizeProduct),
+      data: filtered,
+      total: filtered.length,
+      page: 1,
+      limit: filtered.length || 1,
+      totalPages: 1,
+      hasNext: false,
+      hasPrev: false,
     }
   }
 
   async getProductsByBrand(brandId: string, filters: Omit<ProductFilters, 'brand'> = {}): Promise<PaginatedResponse<Product>> {
-    const params = new URLSearchParams()
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString())
-      }
+    const base = await this.getProducts({ page: 1, limit: 1000, ...filters })
+    const filtered = base.data.filter((p: any) => {
+      if (!p) return false
+      if (p.brand === brandId) return true
+      if (p.brand && typeof p.brand === 'object' && p.brand._id === brandId) return true
+      return false
     })
 
-    const payload = await this.request<PaginatedResponse<any>>(`/products/brand/${brandId}?${params.toString()}`)
     return {
-      ...payload,
-      data: (payload.data || []).map(this.normalizeProduct),
+      data: filtered,
+      total: filtered.length,
+      page: 1,
+      limit: filtered.length || 1,
+      totalPages: 1,
+      hasNext: false,
+      hasPrev: false,
     }
   }
 
   // Categories API
   async getCategories(): Promise<Category[]> {
-    // Use default /categories endpoint to get all categories
+    // Backend exposes simple /categories endpoint (optionally with activeOnly)
     try {
-      const payload = await this.request<any>('/categories?page=1&limit=1000')
-      // Handle paginated response
-      if (payload?.data && Array.isArray(payload.data)) return payload.data as Category[]
-      // Handle direct array response
+      const payload = await this.request<any>('/categories?activeOnly=true')
       if (Array.isArray(payload)) return payload as Category[]
-      // Handle paginated shape with docs
-      if (payload?.data?.docs && Array.isArray(payload.data.docs)) return payload.data.docs as Category[]
-      if (payload?.docs && Array.isArray(payload.docs)) return payload.docs as Category[]
+      if (payload?.data && Array.isArray(payload.data)) return payload.data as Category[]
       return []
     } catch (error) {
       console.error('Error in getCategories:', error)
@@ -677,20 +619,20 @@ class ApiClient {
   }
 
   async getCategoryBySlug(slug: string): Promise<Category> {
-    return await this.request<Category>(`/categories/slug/${slug}`)
+    const all = await this.getCategories()
+    const match = all.find(cat => cat.slug === slug || cat.name === slug)
+    if (!match) {
+      throw new Error('Category not found')
+    }
+    return match
   }
 
   // Brands API
   async getBrands(): Promise<Brand[]> {
-    // Use active brands with high limit; normalize paginated responses
-    const params = new URLSearchParams()
-    params.append('page', '1')
-    params.append('limit', '1000')
-    const payload = await this.request<any>(`/brands/active?${params.toString()}`)
+    // Backend exposes /brands with optional activeOnly flag
+    const payload = await this.request<any>('/brands?activeOnly=true')
     if (Array.isArray(payload)) return payload as Brand[]
     if (payload?.data && Array.isArray(payload.data)) return payload.data as Brand[]
-    if (payload?.data?.docs && Array.isArray(payload.data.docs)) return payload.data.docs as Brand[]
-    if (payload?.docs && Array.isArray(payload.docs)) return payload.docs as Brand[]
     return []
   }
 
@@ -699,24 +641,29 @@ class ApiClient {
   }
 
   async getBrandBySlug(slug: string): Promise<Brand> {
-    return await this.request<Brand>(`/brands/slug/${slug}`)
+    const all = await this.getBrands()
+    const match = all.find(brand => brand.slug === slug || brand.name === slug)
+    if (!match) {
+      throw new Error('Brand not found')
+    }
+    return match
   }
 
-  async getBrandsByCountry(country: string, params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Brand>> {
-    const searchParams = new URLSearchParams()
-    searchParams.append('country', country)
-    
-    Object.entries(params).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        searchParams.append(key, value.toString())
-      }
-    })
-
-    const suffix = searchParams.toString() ? `?${searchParams.toString()}` : ''
-    return await this.request<PaginatedResponse<Brand>>(`/brands/country/${country}${suffix}`)
+  async getBrandsByCountry(country: string, _params: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<Brand>> {
+    const all = await this.getBrands()
+    const filtered = all.filter(brand => (brand.country || '').toLowerCase() === country.toLowerCase())
+    return {
+      data: filtered,
+      total: filtered.length,
+      page: 1,
+      limit: filtered.length || 1,
+      totalPages: 1,
+      hasNext: false,
+      hasPrev: false,
+    }
   }
 
-  // Filter Options API
+  // Filter Options API - derived client-side from products & categories
   async getFilterOptions(): Promise<{
     categories: Array<{ _id: string; name: string; slug: string }>;
     brands: Array<{ _id: string; name: string; slug: string }>;
@@ -724,21 +671,65 @@ class ApiClient {
     colors: string[];
     priceRange: { min: number; max: number };
   }> {
-    return await this.request<any>('/products/filter-options')
-  }
+    const [categories, products, brands] = await Promise.all([
+      this.getCategories(),
+      this.getProducts({ page: 1, limit: 1000 }),
+      this.getBrands(),
+    ])
 
-  // Orders API - TODO: Connect to backend
-  async getCustomerOrders(customerId: string, filters: { page?: number; limit?: number } = {}): Promise<any> {
-    const params = new URLSearchParams()
-    
-    Object.entries(filters).forEach(([key, value]) => {
-      if (value !== undefined && value !== null) {
-        params.append(key, value.toString())
+    const sizeSet = new Set<string>()
+    const colorSet = new Set<string>()
+    let minPrice = Number.POSITIVE_INFINITY
+    let maxPrice = 0
+
+    products.data.forEach((p) => {
+      if (Array.isArray(p.availableSizes)) {
+        p.availableSizes.forEach((s) => s && sizeSet.add(s))
+      }
+      if (Array.isArray(p.colors)) {
+        p.colors.forEach((c) => c && colorSet.add(c))
+      }
+      if (typeof p.price === 'number') {
+        if (p.price < minPrice) minPrice = p.price
+        if (p.price > maxPrice) maxPrice = p.price
       }
     })
 
-    const suffix = params.toString() ? `?${params.toString()}` : ''
-    return await this.request(`/orders/customer/${customerId}${suffix}`)
+    if (!isFinite(minPrice)) {
+      minPrice = 0
+    }
+
+    return {
+      categories: categories.map((c) => ({ _id: c._id, name: c.name, slug: c.slug })),
+      brands: brands.map((b) => ({ _id: b._id, name: b.name, slug: b.slug })),
+      sizes: Array.from(sizeSet),
+      colors: Array.from(colorSet),
+      priceRange: { min: minPrice, max: maxPrice },
+    }
+  }
+
+  // Orders API - simple client-side filtering over /orders
+  async getCustomerOrders(customerId: string, filters: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<any>> {
+    // Backend does not yet expose customer-specific orders; fetch all and filter by phone/session if needed.
+    const all = await this.request<any[]>('/orders')
+    const page = filters.page ?? 1
+    const limit = filters.limit ?? 20
+
+    // For now, return all orders (no real customer linkage available)
+    const total = all.length
+    const totalPages = total > 0 ? Math.ceil(total / limit) : 1
+    const start = (page - 1) * limit
+    const end = start + limit
+
+    return {
+      data: all.slice(start, end),
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNext: page < totalPages,
+      hasPrev: page > 1,
+    }
   }
 
   async getOrder(id: string): Promise<any> {
@@ -752,13 +743,34 @@ class ApiClient {
     })
   }
 
-  // Banner API
-  async getBannersByPosition(position: string = 'hero'): Promise<any[]> {
-    const response = await this.request<any[]>(`/banners/position/${position}`)
-    return Array.isArray(response) ? response : []
+  // Banner API - hero banners (active only)
+  async getHeroBanners(): Promise<Array<{
+    _id: string
+    title?: string
+    subtitle?: string
+    description?: string
+    imageUrl: string
+    altText?: string
+    linkUrl?: string
+    linkText?: string
+  }>> {
+    // Backend supports /banners with ?activeOnly=true
+    const response = await this.request<any[]>(`/banners?activeOnly=true`)
+    if (!Array.isArray(response)) return []
+
+    return response.map((banner: any) => ({
+      _id: banner._id,
+      title: banner.title,
+      subtitle: banner.subtitle,
+      description: banner.description,
+      imageUrl: banner.image,
+      altText: banner.title || banner.subtitle || 'Hero banner',
+      linkUrl: banner.buttonLink || '/shop',
+      linkText: banner.buttonText || 'Shop Now',
+    }))
   }
 
-  // Shipping API
+  // Shipping "API" - computed client-side (no backend route yet)
   async calculateShipping(data: {
     shippingAddress: {
       country: string
@@ -787,10 +799,25 @@ class ApiClient {
     totalCost: number
     currency: string
   }> {
-    return await this.request('/shipping/calculate', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    })
+    const baseCost = 500
+    const freeThreshold = 10000
+    const orderTotal = data.orderTotal ?? 0
+
+    const cost = orderTotal >= freeThreshold ? 0 : baseCost
+
+    return {
+      availableMethods: [
+        {
+          methodId: 'standard',
+          name: 'Standard Delivery',
+          cost,
+          estimatedDays: 3,
+          description: 'Standard nationwide delivery',
+        },
+      ],
+      totalCost: cost,
+      currency: 'PKR',
+    }
   }
 }
 

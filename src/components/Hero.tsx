@@ -29,7 +29,7 @@ export default function Hero() {
     const fetchBanners = async () => {
       try {
         setLoading(true)
-        const fetchedBanners = await apiClient.getBannersByPosition('hero')
+        const fetchedBanners = await apiClient.getHeroBanners()
         if (fetchedBanners && fetchedBanners.length > 0) {
           setBanners(fetchedBanners)
         } else {

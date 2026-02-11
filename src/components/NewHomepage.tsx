@@ -40,7 +40,7 @@ export default function NewHomepage() {
         setLoading(true)
         const [categoriesData, bannersData] = await Promise.all([
           apiClient.getCategories(),
-          apiClient.getBannersByPosition('hero').catch(() => [])
+          apiClient.getHeroBanners().catch(() => [])
         ])
         setCategories(categoriesData || [])
         setBanners(bannersData || [])

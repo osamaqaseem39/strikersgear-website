@@ -7,7 +7,7 @@
 
 @layer base {
   body {
-    @apply bg-white text-gray-900;
+    @apply bg-black text-gray-100;
   }
   
   .font-serif {
