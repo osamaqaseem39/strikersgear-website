@@ -46,7 +46,7 @@ export default function Footer() {
               <Link href="/" className="flex items-center">
                 <Image
                   src="/images/logo.png"
-                  alt="Striker Gear"
+                  alt="Strikers Gear"
                   width={100}
                   height={40}
                   className="h-10 w-auto"
@@ -54,7 +54,7 @@ export default function Footer() {
               </Link>
             </div>
             <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-              Exquisite couture for the sophisticated woman. Discover fashion that defines elegance and style.
+              Your trusted football sports shop for premium cleats, grip socks and grippers, football jerseys, shin pads, and performance socks. Gear up for victory.
             </p>
             <div className="flex space-x-3">
               {socialLinks.map((social) => (
@@ -150,8 +150,8 @@ export default function Footer() {
             transition={{ duration: 0.6 }}
             className="flex flex-col md:flex-row justify-between items-center text-gray-400 text-sm"
           >
-            <p>&copy; 2024 Striker Gear. All rights reserved.</p>
-            <p className="mt-2 md:mt-0">Crafted with ❤️ for the sophisticated woman</p>
+            <p>&copy; {new Date().getFullYear()} Strikers Gear. All rights reserved.</p>
+            <p className="mt-2 md:mt-0">Gear up for the game ⚽</p>
           </motion.div>
         </div>
       </div>

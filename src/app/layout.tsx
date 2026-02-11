@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   title: 'Strikers Gear - Football Cleats & Sports Accessories',
   description:
     'Strikers Gear is your football-focused sports shop for premium cleats, grip socks and grippers, football jerseys, shin pads, and performance socks.',
+  icons: {
+    icon: '/favicon.ico',
+  },
 }
 
 export default function RootLayout({

@@ -146,9 +146,12 @@ export default function Hero() {
                       fetchPriority={index === 0 ? 'high' : 'auto'}
                       quality={85}
                       sizes="100vw"
-                      className="object-cover w-full h-full"
+                      className="object-contain w-full h-full"
                     />
                   </div>
+
+                  {/* Gradient Overlay */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
 
               </motion.div>
               </Link>
