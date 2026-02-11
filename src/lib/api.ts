@@ -29,7 +29,7 @@ export interface Product {
   features?: string[]
   featuredImage?: string
   gallery?: string[]
-  images?: string[]
+  images: string[]
   price: number
   category: string
   brand?: string
