@@ -66,11 +66,11 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
     // Filter by favorite colors
     if (userProfile.preferences.favoriteColors.length > 0) {
       filtered = filtered.filter(product => {
-        const productColors = product.colors || []
+        const productColors = (product.colors || []).map((c) => typeof c === 'string' ? c : (c as { name?: string })?.name ?? '')
         return userProfile.preferences.favoriteColors.some(favColor =>
           productColors.some(pc => 
-            String(pc).toLowerCase().includes(String(favColor).toLowerCase()) ||
-            String(favColor).toLowerCase().includes(String(pc).toLowerCase())
+            pc && (pc.toLowerCase().includes(String(favColor).toLowerCase()) ||
+            String(favColor).toLowerCase().includes(pc.toLowerCase()))
           )
         )
       })

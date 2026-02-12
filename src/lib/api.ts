@@ -49,7 +49,8 @@ export interface Product {
   rating?: number
   reviews?: number
   availableSizes?: string[]
-  colors?: string[]
+  /** Color names or objects with name/imageUrl for swatches */
+  colors?: (string | { name?: string; imageUrl?: string })[]
   sizeChartImageUrl?: string
   bodyType?: string[]
   tags?: string[]
@@ -209,16 +210,16 @@ class ApiClient {
     // Normalize availableSizes: ensure string array (backend may send refs or objects)
     let availableSizes: string[] | undefined
     if (Array.isArray(raw?.availableSizes) && raw.availableSizes.length > 0) {
-      availableSizes = raw.availableSizes
+      const sizes = raw.availableSizes
         .map((s: any) => (typeof s === 'string' ? s : s?.name ?? s?.size ?? s?.label))
-        .filter(Boolean)
-      if (availableSizes.length === 0) availableSizes = undefined
+        .filter(Boolean) as string[]
+      availableSizes = sizes.length > 0 ? sizes : undefined
     }
 
     // Normalize colors: ensure string array or array of { name, imageUrl } (backend may send refs)
     let colors: (string | { name?: string; imageUrl?: string })[] | undefined
     if (Array.isArray(raw?.colors) && raw.colors.length > 0) {
-      colors = raw.colors
+      const colorList = raw.colors
         .map((c: any) => {
           if (typeof c === 'string' && c.trim() && !/^[a-f\d]{24}$/i.test(c.trim())) return c.trim()
           if (c && typeof c === 'object') {
@@ -228,7 +229,7 @@ class ApiClient {
           return null
         })
         .filter(Boolean) as (string | { name?: string; imageUrl?: string })[]
-      if (colors.length === 0) colors = undefined
+      colors = colorList.length > 0 ? colorList : undefined
     }
 
     return {
@@ -649,7 +650,10 @@ class ApiClient {
         p.availableSizes.forEach((s) => s && sizeSet.add(s))
       }
       if (Array.isArray(p.colors)) {
-        p.colors.forEach((c) => c && colorSet.add(c))
+        p.colors.forEach((c) => {
+          const name = typeof c === 'string' ? c : (c as { name?: string })?.name
+          if (name) colorSet.add(name)
+        })
       }
       if (typeof p.price === 'number') {
         if (p.price < minPrice) minPrice = p.price

@@ -132,9 +132,10 @@ export default function MobileShopPage() {
     
     let matchesColors = true
     if (selectedColors.length > 0 && product.colors && product.colors.length > 0) {
+      const colorStrs = product.colors.map((c) => typeof c === 'string' ? c : (c as { name?: string })?.name ?? '')
       matchesColors = selectedColors.some(color => 
-        product.colors?.some(pc => 
-          pc.toLowerCase().includes(color.toLowerCase()) || color.toLowerCase().includes(pc.toLowerCase())
+        colorStrs.some(pc => 
+          pc && (pc.toLowerCase().includes(color.toLowerCase()) || color.toLowerCase().includes(pc.toLowerCase()))
         )
       )
     }

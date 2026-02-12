@@ -271,8 +271,9 @@ export function AnalyticsProvider({ children }: { children: ReactNode }) {
 
     if (product.colors) {
       product.colors.forEach(color => {
-        if (!profile.preferences.favoriteColors.includes(color)) {
-          profile.preferences.favoriteColors.push(color)
+        const name = typeof color === 'string' ? color : (color as { name?: string })?.name
+        if (name && !profile.preferences.favoriteColors.includes(name)) {
+          profile.preferences.favoriteColors.push(name)
         }
       })
     }

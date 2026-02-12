@@ -82,11 +82,10 @@ export default function ProductsPage() {
 
     // Color family filter
     if ((filters as any).colorFamilies && (filters as any).colorFamilies.length > 0) {
-      const productColors = product.colors || []
+      const productColors = (product.colors || []).map((c) => typeof c === 'string' ? c : (c?.name ?? ''))
       if (!(filters as any).colorFamilies.some((color: string) => 
-        productColors.some((pc: string) => 
-          pc.toLowerCase().includes(color.toLowerCase()) || 
-          color.toLowerCase().includes(pc.toLowerCase())
+        productColors.some((pc) => 
+          pc && (pc.toLowerCase().includes(color.toLowerCase()) || color.toLowerCase().includes(pc.toLowerCase()))
         )
       )) return false
     }
