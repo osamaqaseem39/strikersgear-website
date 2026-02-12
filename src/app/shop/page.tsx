@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useIsMobile } from '@/utils/useMobile'
 import Header from '@/components/Header'
@@ -24,7 +26,7 @@ const sortOptions = [
   'Best Rated'
 ]
 
-export default function ShopPage() {
+function ShopPageInner() {
   const isMobile = useIsMobile()
   const searchParams = useSearchParams()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -651,5 +653,13 @@ export default function ShopPage() {
 
       <MobileBottomNav />
     </div>
+  )
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <ShopPageInner />
+    </Suspense>
   )
 }

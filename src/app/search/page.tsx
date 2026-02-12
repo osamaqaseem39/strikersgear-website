@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { Suspense, useState, useEffect } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { useIsMobile } from '@/utils/useMobile'
 import { motion } from 'framer-motion'
@@ -16,7 +18,7 @@ import Sidebar from '@/components/Sidebar'
 import Footer from '@/components/Footer'
 import MobileBottomNav from '@/components/MobileBottomNav'
 
-export default function SearchPage() {
+function SearchPageInner() {
   const isMobile = useIsMobile()
   const searchParams = useSearchParams()
   const { products: allProducts, loading: productsLoading, error: productsError } = useProducts()
@@ -438,5 +440,13 @@ export default function SearchPage() {
       <Footer />
       <MobileBottomNav />
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <SearchPageInner />
+    </Suspense>
   )
 }

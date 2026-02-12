@@ -1,6 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+export const dynamic = 'force-dynamic'
+
+import { Suspense, useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Header from '@/components/Header'
 import Sidebar from '@/components/Sidebar'
@@ -10,7 +12,7 @@ import { CheckCircle, ShoppingBag, Home, Package, Copy, Check } from 'lucide-rea
 import Link from 'next/link'
 import { apiClient } from '@/lib/api'
 
-export default function CheckoutSuccessPage() {
+function CheckoutSuccessPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const orderId = searchParams.get('orderId')
@@ -216,6 +218,14 @@ export default function CheckoutSuccessPage() {
       
       <MobileBottomNav />
     </div>
+  )
+}
+
+export default function CheckoutSuccessPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-gray-50" />}>
+      <CheckoutSuccessPageInner />
+    </Suspense>
   )
 }
 
