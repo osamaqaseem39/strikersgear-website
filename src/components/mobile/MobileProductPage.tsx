@@ -219,7 +219,7 @@ export default function MobileProductPage() {
 
       {/* Product Images - Mobile Optimized */}
       <div className="relative bg-white">
-        <div className="relative aspect-[3/4] bg-gray-100">
+        <div className="relative aspect-square bg-gray-100">
           {isExternalUrl ? (
             <Image
               src={mainImageUrl}

@@ -51,7 +51,7 @@ export default function RecentlyViewed() {
               className="group relative bg-white rounded-lg shadow-sm hover:shadow-lg transition-shadow w-full max-w-full overflow-hidden"
             >
               <Link href={`/products/${product.slug}`}>
-                <div className="relative aspect-[3/4] overflow-hidden rounded-t-lg">
+                <div className="relative aspect-square overflow-hidden rounded-t-lg">
                   <Image
                     src={product.image}
                     alt={product.name}

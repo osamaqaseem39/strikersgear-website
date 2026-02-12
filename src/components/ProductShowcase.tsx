@@ -53,7 +53,7 @@ export default function ProductShowcase() {
             <div className="h-8 bg-gray-200 rounded w-64 mb-6"></div>
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 lg:gap-6">
               {[...Array(6)].map((_, index) => (
-                <div key={index} className="bg-gray-200 rounded-lg aspect-[3/4]"></div>
+                <div key={index} className="bg-gray-200 rounded-lg aspect-square"></div>
               ))}
             </div>
           </div>
@@ -100,7 +100,7 @@ export default function ProductShowcase() {
                 <div key={product._id || product.id} className="flex-shrink-0 w-1/2 sm:w-1/3 md:w-1/4 lg:w-1/6">
                   <div className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-shadow">
                     {/* Product Image */}
-                    <div className="relative aspect-[3/4] overflow-hidden">
+                    <div className="relative aspect-square overflow-hidden">
                       <img
                         src={product.images?.[0] || product.image || '/images/1.png'}
                         alt={product.name}

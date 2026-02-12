@@ -384,7 +384,7 @@ export default function ProductPage() {
                   const imageSrc = mainImageUrl.startsWith('/') ? mainImageUrl : (isExternalUrl ? mainImageUrl : `/images/1.png`)
 
                   return (
-                    <div className="relative aspect-[9/16] bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2">
+                    <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2">
                       {isExternalUrl ? (
                         <Image
                           src={imageSrc}

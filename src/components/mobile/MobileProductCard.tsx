@@ -46,7 +46,7 @@ export default function MobileProductCard({
         className="group relative bg-white rounded-lg overflow-hidden shadow-sm border border-gray-100 active:scale-95 transition-transform"
       >
         {/* Image Container - Optimized for mobile */}
-        <div className="relative aspect-[3/4] overflow-hidden bg-gray-50 w-full">
+        <div className="relative aspect-square overflow-hidden bg-gray-50 w-full">
           {image && image.startsWith('http') ? (
             <Image
               src={image}

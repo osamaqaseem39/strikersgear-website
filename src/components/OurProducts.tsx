@@ -305,7 +305,7 @@ export default function OurProducts() {
                                 className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 w-full max-w-full"
                               >
                                 {/* Product Image */}
-                                <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+                                <div className="relative aspect-square overflow-hidden bg-gray-100">
                                   {productImage.startsWith('http') ? (
                                     <Image
                                       src={productImage}
