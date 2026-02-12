@@ -183,16 +183,15 @@ export default function SearchPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return (true && <div className="min-h-screen bg-gray-50">
       <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
       <div className="flex">
         <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
         <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
           {/* Header */}
           <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -433,6 +432,7 @@ export default function SearchPage() {
             )}
           </div>
         </div>
+      </div>
         </main>
       </div>
       <Footer />

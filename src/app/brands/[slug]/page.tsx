@@ -120,29 +120,28 @@ export default function BrandDetailPage() {
     )
   }
 
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return (true && <div className="min-h-screen bg-gray-50">
       <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
       <div className="flex">
         <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
         <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
           {/* Brand Header */}
           <div className="bg-white border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <button
-              onClick={() => window.history.back()}
-              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back to Brands
-            </button>
-            
-            <div className="flex items-center gap-8">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
+              >
+                <button
+                  onClick={() => window.history.back()}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6 transition-colors"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  Back to Brands
+                </button>
+
+                <div className="flex items-center gap-8">
               {brand.logo && (
                 <div className="w-24 h-24 rounded-2xl overflow-hidden bg-gray-100 flex items-center justify-center">
                   <img
@@ -183,11 +182,11 @@ export default function BrandDetailPage() {
                 </div>
               </div>
             </div>
-          </motion.div>
-        </div>
-      </div>
+              </motion.div>
+            </div>
+          </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
           <div className="lg:w-64">
@@ -442,6 +441,7 @@ export default function BrandDetailPage() {
             )}
           </div>
         </div>
+      </div>
         </main>
       </div>
       <Footer />
