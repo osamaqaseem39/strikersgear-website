@@ -206,6 +206,31 @@ class ApiClient {
       ? raw.category
       : (raw?.category?._id || raw?.category || '')
 
+    // Normalize availableSizes: ensure string array (backend may send refs or objects)
+    let availableSizes: string[] | undefined
+    if (Array.isArray(raw?.availableSizes) && raw.availableSizes.length > 0) {
+      availableSizes = raw.availableSizes
+        .map((s: any) => (typeof s === 'string' ? s : s?.name ?? s?.size ?? s?.label))
+        .filter(Boolean)
+      if (availableSizes.length === 0) availableSizes = undefined
+    }
+
+    // Normalize colors: ensure string array or array of { name, imageUrl } (backend may send refs)
+    let colors: (string | { name?: string; imageUrl?: string })[] | undefined
+    if (Array.isArray(raw?.colors) && raw.colors.length > 0) {
+      colors = raw.colors
+        .map((c: any) => {
+          if (typeof c === 'string' && c.trim() && !/^[a-f\d]{24}$/i.test(c.trim())) return c.trim()
+          if (c && typeof c === 'object') {
+            const name = c.name ?? c.colorName ?? c.label ?? c.title ?? (typeof c.colorId === 'string' && !/^[a-f\d]{24}$/i.test(c.colorId) ? c.colorId : '')
+            if (name) return { name: String(name), imageUrl: c.imageUrl ?? c.url }
+          }
+          return null
+        })
+        .filter(Boolean) as (string | { name?: string; imageUrl?: string })[]
+      if (colors.length === 0) colors = undefined
+    }
+
     return {
       _id: String(raw._id),
       name: raw.name,
@@ -227,6 +252,20 @@ class ApiClient {
       isActive: raw.isActive,
       createdAt: raw.createdAt,
       updatedAt: raw.updatedAt,
+      originalPrice: raw.originalPrice,
+      salePrice: raw.salePrice,
+      isSale: raw.isSale,
+      isNew: raw.isNew,
+      rating: raw.rating,
+      reviews: raw.reviews,
+      availableSizes,
+      colors,
+      bodyType: raw.bodyType,
+      tags: raw.tags,
+      status: raw.status,
+      inStock: raw.inStock,
+      stockQuantity: raw.stockQuantity,
+      stockCount: raw.stockCount,
     }
   }
 
