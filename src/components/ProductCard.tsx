@@ -45,20 +45,26 @@ export default function ProductCard({
         <div className="relative aspect-[3/4] overflow-hidden bg-gray-100 w-full">
           {image && image.startsWith('http') ? (
             <Image
-              src={image}
+              src={image || '/images/1.png'}
               alt={name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               className="object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
               quality={80}
+              onError={(e) => {
+                e.currentTarget.src = '/images/1.png'
+              }}
             />
           ) : (
             <img
-              src={image}
+              src={image || '/images/1.png'}
               alt={name}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
               loading="lazy"
+              onError={(e) => {
+                e.currentTarget.src = '/images/1.png'
+              }}
             />
           )}
           

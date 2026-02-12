@@ -132,24 +132,64 @@ class ApiClient {
 
     // Normalize images from multiple possible shapes
     let imageUrls: string[] | undefined = undefined
+    
+    // First, try to get images from the images array
     if (Array.isArray(raw?.images)) {
       imageUrls = []
       for (const img of raw.images) {
-        if (typeof img === 'string') {
-          const looksLikeObjectId = /^[a-f\d]{24}$/i.test(img)
+        if (typeof img === 'string' && img.trim()) {
+          const looksLikeObjectId = /^[a-f\d]{24}$/i.test(img.trim())
           if (!looksLikeObjectId) {
-            imageUrls.push(img)
+            imageUrls.push(img.trim())
           }
           continue
         }
         if (img && typeof img === 'object') {
           const candidate = img.url || img.imageUrl || img.path || ''
-          if (candidate) imageUrls.push(candidate)
+          if (candidate && candidate.trim()) {
+            imageUrls.push(candidate.trim())
+          }
         }
       }
       if (imageUrls.length === 0) {
         imageUrls = undefined
       }
+    }
+    
+    // Fallback to featuredImage if images array is empty
+    if ((!imageUrls || imageUrls.length === 0) && raw?.featuredImage) {
+      const featuredImg = typeof raw.featuredImage === 'string' 
+        ? raw.featuredImage.trim() 
+        : (raw.featuredImage?.url || raw.featuredImage?.imageUrl || raw.featuredImage?.path || '').trim()
+      if (featuredImg && !/^[a-f\d]{24}$/i.test(featuredImg)) {
+        imageUrls = [featuredImg]
+      }
+    }
+    
+    // Fallback to gallery if still no images
+    if ((!imageUrls || imageUrls.length === 0) && Array.isArray(raw?.gallery) && raw.gallery.length > 0) {
+      imageUrls = []
+      for (const img of raw.gallery) {
+        if (typeof img === 'string' && img.trim()) {
+          const looksLikeObjectId = /^[a-f\d]{24}$/i.test(img.trim())
+          if (!looksLikeObjectId) {
+            imageUrls.push(img.trim())
+          }
+        } else if (img && typeof img === 'object') {
+          const candidate = img.url || img.imageUrl || img.path || ''
+          if (candidate && candidate.trim()) {
+            imageUrls.push(candidate.trim())
+          }
+        }
+      }
+      if (imageUrls.length === 0) {
+        imageUrls = undefined
+      }
+    }
+    
+    // If still no images, use placeholder
+    if (!imageUrls || imageUrls.length === 0) {
+      imageUrls = [placeholder]
     }
 
     // Normalize brand to a readable string where possible; avoid exposing raw ObjectIds

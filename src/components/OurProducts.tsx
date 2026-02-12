@@ -277,9 +277,11 @@ export default function OurProducts() {
                       className="flex gap-2 sm:gap-4 lg:gap-6"
                     >
                       {item.products.map((product) => {
-                        const productImage = Array.isArray(product.images) && product.images.length > 0
-                          ? product.images[0]
-                          : '/images/logo.png'
+                        const productImage = 
+                          (Array.isArray(product.images) && product.images.length > 0 && product.images[0]) ||
+                          product.featuredImage ||
+                          (Array.isArray(product.gallery) && product.gallery.length > 0 && product.gallery[0]) ||
+                          '/images/logo.png'
 
                         // Calculate width accounting for gaps
                         // Mobile: gap-2 (0.5rem), Tablet: gap-4 (1rem), Desktop: gap-6 (1.5rem)

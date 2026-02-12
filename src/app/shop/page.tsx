@@ -545,13 +545,20 @@ export default function ShopPage() {
                     <div className="relative overflow-hidden rounded-t-lg aspect-[3/4]">
                       <Link href={`/products/${product.slug}`}>
                         <Image
-                          src={product.images[0] || '/images/1.png'}
+                          src={
+                            (product.images && product.images.length > 0 && product.images[0]) ||
+                            product.featuredImage ||
+                            '/images/1.png'
+                          }
                           alt={product.name}
                           fill
                           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                           className="object-cover group-hover:scale-105 transition-transform duration-200"
                           loading="lazy"
                           quality={80}
+                          onError={(e) => {
+                            e.currentTarget.src = '/images/1.png'
+                          }}
                         />
                       </Link>
                       

@@ -214,9 +214,11 @@ export default function ProductsByCategory({
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 xl:gap-6 w-full max-w-full">
                 {item.products.map((product, productIndex) => {
                   // Get the first image
-                  const productImage = Array.isArray(product.images) && product.images.length > 0
-                    ? product.images[0]
-                    : '/images/logo.png'
+                  const productImage = 
+                    (Array.isArray(product.images) && product.images.length > 0 && product.images[0]) ||
+                    product.featuredImage ||
+                    (Array.isArray(product.gallery) && product.gallery.length > 0 && product.gallery[0]) ||
+                    '/images/logo.png'
                   
                   // Get category name (could be string or array)
                   const categoryName = Array.isArray(product.categories) && product.categories.length > 0

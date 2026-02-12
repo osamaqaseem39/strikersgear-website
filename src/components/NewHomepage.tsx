@@ -308,7 +308,7 @@ export default function NewHomepage() {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    image={product.images[0] || '/images/1.png'}
+                    image={getProductImage(product)}
                     category={product.categories?.[0] || product.category || 'General'}
                     brand={product.brand}
                     isNew={product.isNew}
@@ -358,7 +358,7 @@ export default function NewHomepage() {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    image={product.images[0] || '/images/1.png'}
+                    image={getProductImage(product)}
                     category={product.categories?.[0] || product.category || 'General'}
                     brand={product.brand}
                     isNew={product.isNew}
@@ -443,7 +443,7 @@ export default function NewHomepage() {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    image={product.images[0] || '/images/1.png'}
+                    image={getProductImage(product)}
                     category={product.categories?.[0] || product.category || 'General'}
                     brand={product.brand}
                     isNew={product.isNew}
