@@ -52,7 +52,7 @@ export default function BrandsPage() {
         <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
         <div className="flex">
           <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
-          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0">
+          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
             <LoadingSpinner />
           </main>
         </div>
@@ -67,7 +67,7 @@ export default function BrandsPage() {
         <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
         <div className="flex">
           <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
-          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0">
+          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
               <div className="text-center">
                 <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
@@ -92,7 +92,7 @@ export default function BrandsPage() {
       <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
       <div className="flex">
         <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
-        <main className="flex-1 lg:ml-64 pb-16 lg:pb-0">
+        <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
           {/* Page Header */}
           <div className="bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

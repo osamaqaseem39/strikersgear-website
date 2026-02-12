@@ -8,6 +8,10 @@ import { apiClient, Brand } from '@/lib/api'
 import { Product, ProductFilters } from '@/lib/api'
 import ProductCard from '@/components/ProductCard'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import Header from '@/components/Header'
+import Sidebar from '@/components/Sidebar'
+import Footer from '@/components/Footer'
+import MobileBottomNav from '@/components/MobileBottomNav'
 
 export default function BrandDetailPage() {
   const params = useParams()
@@ -23,6 +27,15 @@ export default function BrandDetailPage() {
   })
   const [totalPages, setTotalPages] = useState(1)
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const handleMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const handleMenuClose = () => {
+    setIsMobileMenuOpen(false)
+  }
 
   const fetchBrandAndProducts = async () => {
     try {
@@ -67,30 +80,54 @@ export default function BrandDetailPage() {
   }
 
   if (loading) {
-    return <LoadingSpinner />
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
+        <div className="flex">
+          <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
+          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
+            <LoadingSpinner />
+          </main>
+        </div>
+        <MobileBottomNav />
+      </div>
+    )
   }
 
   if (error || !brand) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Brand not found</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
-          <button
-            onClick={() => window.history.back()}
-            className="btn-primary"
-          >
-            Go Back
-          </button>
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
+        <div className="flex">
+          <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
+          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Brand not found</h2>
+                <p className="text-gray-600 mb-4">{error}</p>
+                <button
+                  onClick={() => window.history.back()}
+                  className="btn-primary"
+                >
+                  Go Back
+                </button>
+              </div>
+            </div>
+          </main>
         </div>
+        <MobileBottomNav />
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Brand Header */}
-      <div className="bg-white border-b border-gray-200">
+      <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
+      <div className="flex">
+        <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
+        <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
+          {/* Brand Header */}
+          <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -405,7 +442,10 @@ export default function BrandDetailPage() {
             )}
           </div>
         </div>
+        </main>
       </div>
+      <Footer />
+      <MobileBottomNav />
     </div>
   )
 }

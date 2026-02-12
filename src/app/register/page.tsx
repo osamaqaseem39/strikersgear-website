@@ -41,7 +41,7 @@ export default function RegisterPage() {
         onMenuClick={handleMenuToggle} 
         isMobileMenuOpen={isMobileMenuOpen}
       />
-      <div className="flex items-center justify-center min-h-[calc(100vh-200px)] py-12 px-6">
+      <div className="flex items-center justify-center min-h-[calc(100vh-200px)] py-12 px-6 pt-20 sm:pt-24 lg:pt-24">
         <form onSubmit={onSubmit} className="w-full max-w-sm bg-white rounded-xl p-6 shadow-sm space-y-4">
           <h1 className="text-2xl font-semibold text-gray-900">Create account</h1>
           {error && <p className="text-sm text-red-600">{error}</p>}

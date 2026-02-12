@@ -8,6 +8,10 @@ import { Product, ProductFilters } from '@/lib/api'
 import { useProducts } from '@/contexts/ProductsContext'
 import ProductCard from '@/components/ProductCard'
 import LoadingSpinner from '@/components/LoadingSpinner'
+import Header from '@/components/Header'
+import Sidebar from '@/components/Sidebar'
+import Footer from '@/components/Footer'
+import MobileBottomNav from '@/components/MobileBottomNav'
 
 export default function ProductsPage() {
   // Use products from context
@@ -20,6 +24,15 @@ export default function ProductsPage() {
   })
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [showFilters, setShowFilters] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
+  const handleMenuToggle = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen)
+  }
+
+  const handleMenuClose = () => {
+    setIsMobileMenuOpen(false)
+  }
 
   // Client-side filtering
   const filteredProducts = allProducts.filter(product => {
@@ -134,30 +147,54 @@ export default function ProductsPage() {
   }
 
   if (productsLoading) {
-    return <LoadingSpinner />
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
+        <div className="flex">
+          <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
+          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
+            <LoadingSpinner />
+          </main>
+        </div>
+        <MobileBottomNav />
+      </div>
+    )
   }
 
   if (productsError) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
-          <p className="text-gray-600 mb-4">{productsError}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="btn-primary"
-          >
-            Try Again
-          </button>
+      <div className="min-h-screen bg-gray-50">
+        <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
+        <div className="flex">
+          <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
+          <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
+            <div className="flex items-center justify-center min-h-screen">
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong</h2>
+                <p className="text-gray-600 mb-4">{productsError}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="btn-primary"
+                >
+                  Try Again
+                </button>
+              </div>
+            </div>
+          </main>
         </div>
+        <MobileBottomNav />
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200">
+      <Header onMenuClick={handleMenuToggle} isMobileMenuOpen={isMobileMenuOpen} />
+      <div className="flex">
+        <Sidebar isOpen={isMobileMenuOpen} onClose={handleMenuClose} />
+        <main className="flex-1 lg:ml-64 pb-16 lg:pb-0 pt-20 sm:pt-24 lg:pt-24">
+          {/* Header */}
+          <div className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -451,7 +488,10 @@ export default function ProductsPage() {
             )}
           </div>
         </div>
+        </main>
       </div>
+      <Footer />
+      <MobileBottomNav />
     </div>
   )
 }
