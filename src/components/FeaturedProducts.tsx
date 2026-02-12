@@ -92,7 +92,8 @@ export default function FeaturedProducts({ showHeader = true }: FeaturedProducts
             >
               <div className="relative overflow-hidden rounded-t-lg">
                 <Link href={`/products/${product.slug}`}>
-                  <div className="relative aspect-[3/4]">
+                  {/* 1:1 square image container */}
+                  <div className="relative aspect-square">
                     <Image
                       src={
                         (product.images && product.images.length > 0 && product.images[0]) ||
