@@ -111,14 +111,14 @@ export default function Hero() {
   // Don't render if loading or no banners
   if (loading || banners.length === 0) {
     return (
-      <section className="relative w-full overflow-hidden max-w-full" style={{ aspectRatio: '1/1' }}>
+      <section className="relative w-full overflow-hidden max-w-full aspect-video">
         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
       </section>
     )
   }
 
   return (
-    <section className="relative w-full overflow-hidden max-w-full" style={{ aspectRatio: '1/1' }}>
+    <section className="relative w-full overflow-hidden max-w-full aspect-video">
       {/* Slider Container */}
       <div className="relative w-full h-full max-w-full">
         <AnimatePresence mode="wait">
@@ -149,9 +149,6 @@ export default function Hero() {
                       className="object-contain w-full h-full"
                     />
                   </div>
-
-                  {/* Gradient Overlay */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent" />
 
               </motion.div>
               </Link>

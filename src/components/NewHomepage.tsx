@@ -104,19 +104,18 @@ export default function NewHomepage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section */}
-      <section className="relative min-h-[600px] lg:min-h-[700px] flex items-center justify-center overflow-hidden">
+      {/* Hero Section - 16:9 */}
+      <section className="relative w-full aspect-video flex items-center justify-center overflow-hidden">
         {banners.length > 0 ? (
           <div className="absolute inset-0 z-0">
             <Image
               src={banners[0].imageUrl}
               alt={banners[0].title}
               fill
-              className="object-cover"
+              className="object-contain"
               priority
               quality={90}
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-transparent"></div>
           </div>
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-primary-600 via-primary-700 to-secondary-600"></div>
