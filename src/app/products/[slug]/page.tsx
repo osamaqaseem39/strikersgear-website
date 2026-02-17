@@ -92,6 +92,15 @@ export default function ProductPage() {
     }
   }, [product?._id, slug, addToRecentlyViewed, trackProductView]) // Include all dependencies
 
+  // Auto-select "One Size" when product has no size options
+  useEffect(() => {
+    if (!product) return
+    const hasSizes = (Array.isArray(product.availableSizes) && product.availableSizes.length > 0) ||
+      (product.sizeChart && Array.isArray(product.sizeChart?.sizes) && product.sizeChart.sizes.length > 0) ||
+      (Array.isArray((product as any).attributes?.sizes) && (product as any).attributes.sizes.length > 0)
+    if (!hasSizes) setSelectedSize('One Size')
+  }, [product])
+
   if (loading) {
     return <LoadingSpinner />
   }
@@ -232,224 +241,106 @@ export default function ProductPage() {
           {/* Product Details */}
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
-              {/* Product Images */}
-              <div className="flex flex-col sm:flex-row gap-4">
-                {/* Thumbnail Images - Left Side */}
-                {(() => {
-                  const normalizeImageUrl = (img: any): string => {
-                    if (!img) return '/images/1.png'
-                    
-                    let imageUrl = ''
-                    
-                    // Extract URL from various formats
-                    if (typeof img === 'string') {
-                      imageUrl = img.trim()
-                    } else if (typeof img === 'object') {
-                      imageUrl = (img.url || img.imageUrl || img.path || '').trim()
-                    }
-                    
-                    // Return placeholder if empty or ObjectId
-                    if (!imageUrl || /^[a-f\d]{24}$/i.test(imageUrl)) {
-                      return '/images/1.png'
-                    }
-                    
-                    // Handle absolute URLs (http/https)
-                    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-                      return imageUrl
-                    }
-                    
-                    // Handle absolute paths starting with /
-                    if (imageUrl.startsWith('/')) {
-                      return imageUrl
-                    }
-                    
-                    // Handle relative paths - check if it's an API path
-                    // If it looks like an API upload path, construct full URL
-                    if (imageUrl.startsWith('uploads/') || imageUrl.includes('/uploads/')) {
-                      // Try to get API base URL from environment
-                      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api'
-                      const cleanApiBase = apiBase.replace(/\/api\/?$/, '')
-                      // If it's a full URL, use it; otherwise assume relative to API
-                      if (cleanApiBase.startsWith('http')) {
-                        return `${cleanApiBase}/${imageUrl}`
-                      }
-                      return `/${imageUrl}`
-                    }
-                    
-                    // Default: make it an absolute path
-                    return `/${imageUrl}`
+              {/* Product Images - Slider + Gallery Thumbnails */}
+              {(() => {
+                const normalizeImageUrl = (img: any): string => {
+                  if (!img) return '/images/1.png'
+                  let imageUrl = typeof img === 'string' ? img.trim() : (img.url || img.imageUrl || img.path || '').trim()
+                  if (!imageUrl || /^[a-f\d]{24}$/i.test(imageUrl)) return '/images/1.png'
+                  if (imageUrl.startsWith('http')) return imageUrl
+                  if (imageUrl.startsWith('/')) return imageUrl
+                  if (imageUrl.startsWith('uploads/') || imageUrl.includes('/uploads/')) {
+                    const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api'
+                    const cleanApiBase = apiBase.replace(/\/api\/?$/, '')
+                    return cleanApiBase.startsWith('http') ? `${cleanApiBase}/${imageUrl}` : `/${imageUrl}`
                   }
+                  return `/${imageUrl}`
+                }
+                const imageArray = (Array.isArray(product.images) && product.images.length > 0)
+                  ? product.images
+                  : (Array.isArray((product as any).gallery) ? (product as any).gallery : [])
+                const mainImageUrl = imageArray.length > 0 ? normalizeImageUrl(imageArray[selectedImage] || imageArray[0]) : '/images/1.png'
+                const isExternalUrl = mainImageUrl.startsWith('http')
+                const imageSrc = mainImageUrl.startsWith('/') ? mainImageUrl : (isExternalUrl ? mainImageUrl : '/images/1.png')
 
-                  const imageArray = Array.isArray(product.images) ? product.images : []
-                  
-                  if (imageArray.length > 1) {
-                    return (
-                      <div className="flex flex-row sm:flex-col gap-3 flex-shrink-0 order-2 sm:order-1">
-                        {imageArray.map((image, index) => {
+                return (
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    {/* Gallery Thumbnails - Left (desktop) / Below (mobile) */}
+                    {imageArray.length >= 1 && (
+                      <div className="flex flex-row sm:flex-col gap-2 flex-shrink-0 order-2 sm:order-1 overflow-x-auto sm:overflow-visible pb-2 sm:pb-0">
+                        {imageArray.map((image: any, index: number) => {
                           const imageUrl = normalizeImageUrl(image)
-                          const isExternalUrl = imageUrl.startsWith('http')
-                          
+                          const isExt = imageUrl.startsWith('http')
                           return (
                             <button
                               key={index}
+                              type="button"
                               onClick={() => setSelectedImage(index)}
-                              className={`w-16 h-20 sm:w-20 sm:h-28 rounded-lg overflow-hidden border-2 transition-all duration-200 relative ${
-                                selectedImage === index 
-                                  ? 'border-primary-600 ring-2 ring-primary-200 shadow-md' 
+                              className={`relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                                selectedImage === index
+                                  ? 'border-primary-600 ring-2 ring-primary-200 shadow-md'
                                   : 'border-gray-200 hover:border-primary-400 hover:shadow-sm'
                               }`}
                             >
-                              {isExternalUrl ? (
-                                <Image
-                                  src={imageUrl}
-                                  alt={`${product.name || 'Product'} ${index + 1}`}
-                                  fill
-                                  className="object-cover"
-                                  unoptimized={true}
-                                  sizes="80px"
-                                />
+                              {isExt ? (
+                                <Image src={imageUrl} alt="" fill className="object-cover" unoptimized sizes="80px" />
                               ) : (
-                                <img
-                                  src={imageUrl}
-                                  alt={`${product.name || 'Product'} ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.currentTarget.src = '/images/1.png'
-                                  }}
-                                />
+                                <img src={imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = '/images/1.png' }} />
                               )}
                             </button>
                           )
                         })}
                       </div>
-                    )
-                  }
-                  return null
-                })()}
+                    )}
 
-                {/* Main Image */}
-                {(() => {
-                  // Normalize image - handle both string arrays and object arrays
-                  const normalizeImageUrl = (img: any): string => {
-                    if (!img) return '/images/1.png'
-                    
-                    let imageUrl = ''
-                    
-                    // Extract URL from various formats
-                    if (typeof img === 'string') {
-                      imageUrl = img.trim()
-                    } else if (typeof img === 'object') {
-                      imageUrl = (img.url || img.imageUrl || img.path || '').trim()
-                    }
-                    
-                    // Return placeholder if empty or ObjectId
-                    if (!imageUrl || /^[a-f\d]{24}$/i.test(imageUrl)) {
-                      return '/images/1.png'
-                    }
-                    
-                    // Handle absolute URLs (http/https)
-                    if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
-                      return imageUrl
-                    }
-                    
-                    // Handle absolute paths starting with /
-                    if (imageUrl.startsWith('/')) {
-                      return imageUrl
-                    }
-                    
-                    // Handle relative paths - check if it's an API path
-                    // If it looks like an API upload path, construct full URL
-                    if (imageUrl.startsWith('uploads/') || imageUrl.includes('/uploads/')) {
-                      // Try to get API base URL from environment
-                      const apiBase = process.env.NEXT_PUBLIC_API_URL || '/api'
-                      const cleanApiBase = apiBase.replace(/\/api\/?$/, '')
-                      // If it's a full URL, use it; otherwise assume relative to API
-                      if (cleanApiBase.startsWith('http')) {
-                        return `${cleanApiBase}/${imageUrl}`
-                      }
-                      return `/${imageUrl}`
-                    }
-                    
-                    // Default: make it an absolute path
-                    return `/${imageUrl}`
-                  }
-
-                  const imageArray = Array.isArray(product.images) ? product.images : []
-                  const mainImageUrl = imageArray.length > 0 
-                    ? normalizeImageUrl(imageArray[selectedImage] || imageArray[0])
-                    : '/images/1.png'
-
-                  // Determine if we should use Next.js Image or regular img
-                  const isExternalUrl = mainImageUrl.startsWith('http')
-                  const imageSrc = mainImageUrl.startsWith('/') ? mainImageUrl : (isExternalUrl ? mainImageUrl : `/images/1.png`)
-
-                  return (
-                    <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2">
-                      {isExternalUrl ? (
-                        <Image
-                          src={imageSrc}
-                          alt={product.name || 'Product'}
-                          fill
-                          className="object-cover transition-transform duration-300"
-                          unoptimized={true}
-                          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                        />
-                      ) : (
-                        <img
-                          src={imageSrc}
-                          alt={product.name || 'Product'}
-                          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300"
-                          onError={(e) => {
-                            e.currentTarget.src = '/images/1.png'
-                          }}
-                        />
-                      )}
-                  
-                      {/* Badges */}
-                      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                        {product.isNew && (
-                          <span className="bg-primary-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">
-                            New
-                          </span>
-                        )}
-                        {product.isSale && (
-                          <span className="bg-secondary-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">
-                            Sale
-                          </span>
+                    {/* Main Image Slider */}
+                    <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2 min-h-[280px] sm:min-h-0">
+                      <div key={selectedImage} className="absolute inset-0">
+                        {isExternalUrl ? (
+                          <Image
+                            src={imageSrc}
+                            alt={product.name || 'Product'}
+                            fill
+                            className="object-contain transition-opacity duration-300"
+                            unoptimized
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        ) : (
+                          <img
+                            src={imageSrc}
+                            alt={product.name || 'Product'}
+                            className="absolute inset-0 w-full h-full object-contain transition-opacity duration-300"
+                            onError={(e) => { e.currentTarget.src = '/images/1.png' }}
+                          />
                         )}
                       </div>
 
-                      {/* Navigation Arrows */}
+                      {/* Badges */}
+                      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                        {product.isNew && <span className="bg-primary-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">New</span>}
+                        {product.isSale && <span className="bg-secondary-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">Sale</span>}
+                      </div>
+
+                      {/* Slider Arrows */}
                       {imageArray.length > 1 && (
                         <>
-                          <button
-                            onClick={prevImage}
-                            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10"
-                          >
+                          <button type="button" onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10" aria-label="Previous image">
                             <ChevronLeft className="h-5 w-5 text-gray-700" />
                           </button>
-                          <button
-                            onClick={nextImage}
-                            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10"
-                          >
+                          <button type="button" onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10" aria-label="Next image">
                             <ChevronRight className="h-5 w-5 text-gray-700" />
                           </button>
                         </>
                       )}
 
-                      {/* Wishlist Button */}
-                      <button
-                        onClick={handleWishlist}
-                        className={`absolute top-4 right-4 p-3 rounded-full shadow-xl transition-all duration-200 hover:scale-110 z-10 ${
-                          isWishlisted ? 'bg-primary-600 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-white'
-                        }`}
-                      >
+                      {/* Wishlist */}
+                      <button type="button" onClick={handleWishlist} className={`absolute top-4 right-4 p-3 rounded-full shadow-xl transition-all duration-200 hover:scale-110 z-10 ${isWishlisted ? 'bg-primary-600 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-white'}`} aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}>
                         <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
                       </button>
                     </div>
-                  )
-                })()}
-              </div>
+                  </div>
+                )
+              })()}
 
               {/* Product Info */}
               <div className="space-y-6">
@@ -500,47 +391,38 @@ export default function ProductPage() {
 
                 {/* Product Options & Actions - Combined Card */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 space-y-6">
-                  {/* Size Selection */}
+                  {/* Size Selection - always show (sizes or "One Size") */}
                   {(() => {
-                    // Try to get sizes from multiple possible locations
                     let sizes: string[] = []
-                    
-                    // Check availableSizes first
                     if (Array.isArray(product.availableSizes) && product.availableSizes.length > 0) {
                       sizes = product.availableSizes
-                    }
-                    // Check sizeChart.sizes
-                    else if (product.sizeChart && Array.isArray(product.sizeChart.sizes) && product.sizeChart.sizes.length > 0) {
+                    } else if (product.sizeChart && Array.isArray(product.sizeChart.sizes) && product.sizeChart.sizes.length > 0) {
                       sizes = product.sizeChart.sizes.map((s: any) => s.size || s).filter(Boolean)
-                    }
-                    // Check attributes.sizes
-                    else if ((product as any).attributes?.sizes && Array.isArray((product as any).attributes.sizes) && (product as any).attributes.sizes.length > 0) {
+                    } else if ((product as any).attributes?.sizes && Array.isArray((product as any).attributes.sizes) && (product as any).attributes.sizes.length > 0) {
                       sizes = (product as any).attributes.sizes
                     }
-                    
-                    if (sizes.length > 0) {
-                      return (
-                        <div>
-                          <h3 className="font-semibold text-gray-900 mb-4 text-lg">Select Size</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {sizes.map((size) => (
-                              <button
-                                key={size}
-                                onClick={() => setSelectedSize(size)}
-                                className={`px-5 py-2.5 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                                  selectedSize === size
-                                    ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-sm'
-                                    : 'border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-gray-50'
-                                }`}
-                              >
-                                {size}
-                              </button>
-                            ))}
-                          </div>
+                    const sizeOptions = sizes.length > 0 ? sizes : ['One Size']
+                    return (
+                      <div>
+                        <h3 className="font-semibold text-gray-900 mb-4 text-lg">Size</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {sizeOptions.map((size) => (
+                            <button
+                              key={size}
+                              type="button"
+                              onClick={() => setSelectedSize(size)}
+                              className={`px-5 py-2.5 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
+                                selectedSize === size
+                                  ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-sm'
+                                  : 'border-gray-300 text-gray-700 hover:border-primary-400 hover:bg-gray-50'
+                              }`}
+                            >
+                              {size}
+                            </button>
+                          ))}
                         </div>
-                      )
-                    }
-                    return null
+                      </div>
+                    )
                   })()}
 
                   {/* Color Selection */}

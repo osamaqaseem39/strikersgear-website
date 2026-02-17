@@ -76,6 +76,14 @@ export default function MobileProductPage() {
     }
   }, [product?._id, slug, addToRecentlyViewed, trackProductView])
 
+  useEffect(() => {
+    if (!product) return
+    const hasSizes = (Array.isArray(product.availableSizes) && product.availableSizes.length > 0) ||
+      (product.sizeChart && Array.isArray(product.sizeChart?.sizes) && product.sizeChart.sizes.length > 0) ||
+      (Array.isArray((product as any).attributes?.sizes) && (product as any).attributes.sizes.length > 0)
+    if (!hasSizes) setSelectedSize('One Size')
+  }, [product])
+
   if (loading) {
     return <LoadingSpinner />
   }
@@ -178,8 +186,10 @@ export default function MobileProductPage() {
     return `/${imageUrl}`
   }
 
-  const imageArray = Array.isArray(product.images) ? product.images : []
-  const mainImageUrl = imageArray.length > 0 
+  const imageArray = (Array.isArray(product.images) && product.images.length > 0)
+    ? product.images
+    : (Array.isArray((product as any).gallery) ? (product as any).gallery : [])
+  const mainImageUrl = imageArray.length > 0
     ? normalizeImageUrl(imageArray[selectedImage] || imageArray[0])
     : '/images/1.png'
 
@@ -283,41 +293,37 @@ export default function MobileProductPage() {
           </button>
         </div>
 
-        {/* Image Thumbnails - Horizontal Scroll */}
-        {imageArray.length > 1 && (
-          <div className="px-4 py-3 overflow-x-auto">
-            <div className="flex gap-2">
-              {imageArray.map((image, index) => {
+        {/* Gallery Thumbnails - Horizontal Scroll */}
+        {imageArray.length >= 1 && (
+          <div className="px-4 py-3 overflow-x-auto border-t border-gray-100">
+            <div className="flex gap-2 min-h-[72px]">
+              {imageArray.map((image: any, index: number) => {
                 const imageUrl = normalizeImageUrl(image)
                 const isExternal = imageUrl.startsWith('http')
-                
                 return (
                   <button
                     key={index}
+                    type="button"
                     onClick={() => setSelectedImage(index)}
-                    className={`flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all ${
-                      selectedImage === index 
-                        ? 'border-primary-600 ring-2 ring-primary-200' 
-                        : 'border-gray-200'
+                    className={`relative flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                      selectedImage === index ? 'border-primary-600 ring-2 ring-primary-200' : 'border-gray-200'
                     }`}
                   >
                     {isExternal ? (
                       <Image
                         src={imageUrl}
                         alt={`${product.name} ${index + 1}`}
-                        width={64}
-                        height={80}
-                        className="object-cover w-full h-full"
-                        unoptimized={true}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                        sizes="80px"
                       />
                     ) : (
                       <img
                         src={imageUrl}
                         alt={`${product.name} ${index + 1}`}
                         className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.src = '/images/1.png'
-                        }}
+                        onError={(e) => { e.currentTarget.src = '/images/1.png' }}
                       />
                     )}
                   </button>
@@ -375,10 +381,9 @@ export default function MobileProductPage() {
           )}
         </div>
 
-        {/* Size Selection */}
+        {/* Size options - always show (sizes or "One Size") */}
         {(() => {
           let sizes: string[] = []
-          
           if (Array.isArray(product.availableSizes) && product.availableSizes.length > 0) {
             sizes = product.availableSizes
           } else if (product.sizeChart && Array.isArray(product.sizeChart.sizes) && product.sizeChart.sizes.length > 0) {
@@ -386,30 +391,28 @@ export default function MobileProductPage() {
           } else if ((product as any).attributes?.sizes && Array.isArray((product as any).attributes.sizes) && (product as any).attributes.sizes.length > 0) {
             sizes = (product as any).attributes.sizes
           }
-          
-          if (sizes.length > 0) {
-            return (
-              <div>
-                <h3 className="font-semibold text-gray-900 mb-3 text-sm">Select Size</h3>
-                <div className="flex flex-wrap gap-2">
-                  {sizes.map((size) => (
-                    <button
-                      key={size}
-                      onClick={() => setSelectedSize(size)}
-                      className={`px-4 py-2 border-2 rounded-lg text-xs font-medium transition-all ${
-                        selectedSize === size
-                          ? 'border-primary-600 bg-primary-50 text-primary-700'
-                          : 'border-gray-300 text-gray-700 active:border-primary-400'
-                      }`}
-                    >
-                      {size}
-                    </button>
-                  ))}
-                </div>
+          const sizeOptions = sizes.length > 0 ? sizes : ['One Size']
+          return (
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm">Size</h3>
+              <div className="flex flex-wrap gap-2">
+                {sizeOptions.map((size) => (
+                  <button
+                    key={size}
+                    type="button"
+                    onClick={() => setSelectedSize(size)}
+                    className={`px-4 py-2 border-2 rounded-lg text-xs font-medium transition-all ${
+                      selectedSize === size
+                        ? 'border-primary-600 bg-primary-50 text-primary-700'
+                        : 'border-gray-300 text-gray-700 active:border-primary-400'
+                    }`}
+                  >
+                    {size}
+                  </button>
+                ))}
               </div>
-            )
-          }
-          return null
+            </div>
+          )
         })()}
 
         {/* Color Selection */}
