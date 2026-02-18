@@ -3,11 +3,13 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { registerCustomer } from '@/lib/auth'
+import { useCustomer } from '@/contexts/CustomerContext'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 
 export default function RegisterPage() {
   const router = useRouter()
+  const { login } = useCustomer()
   const [firstName, setFirstName] = useState('')
   const [lastName, setLastName] = useState('')
   const [email, setEmail] = useState('')
@@ -26,8 +28,15 @@ export default function RegisterPage() {
     setLoading(true)
     try {
       const data = await registerCustomer({ firstName, lastName, email, password })
-      localStorage.setItem('customer', JSON.stringify(data))
-      router.push('/dashboard')
+      const token = data.token || data.accessToken || data.access_token
+      const customer = data.customer || data.user || data
+      
+      if (token && customer) {
+        login(token, customer)
+        router.push('/dashboard')
+      } else {
+        setError('Invalid response from server')
+      }
     } catch (err: any) {
       setError(err?.message || 'Registration failed')
     } finally {

@@ -45,7 +45,7 @@ interface Order {
 }
 
 export default function OrdersPage() {
-  const { customer } = useCustomer()
+  const { customer, token } = useCustomer()
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('all')
   const [orders, setOrders] = useState<Order[]>([])
@@ -53,34 +53,38 @@ export default function OrdersPage() {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (customer?._id) {
+    if (customer?._id && token) {
       fetchOrders()
     } else {
       setLoading(false)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [customer])
+  }, [customer, token])
 
   const fetchOrders = async () => {
     try {
       setLoading(true)
       setError(null)
       
-      if (!customer?._id) return
+      if (!customer?._id || !token) return
       
-      const response = await apiClient.getCustomerOrders(customer._id, { page: 1, limit: 50 })
+      const response = await apiClient.getCustomerOrders(
+        customer._id, 
+        { page: 1, limit: 50, status: statusFilter !== 'all' ? statusFilter : undefined },
+        token
+      )
       
       // Map API response to display format
-      const mappedOrders: Order[] = (response.data || []).map((order: APIOrder) => {
-        const items = order.items.map(item => ({
-          name: item.productId?.name || 'Unknown Product',
+      const mappedOrders: Order[] = (response.data || []).map((order: any) => {
+        const items = (order.items || order.orderItems || []).map((item: any) => ({
+          name: item.product?.name || item.productId?.name || 'Unknown Product',
           quantity: item.quantity,
           price: item.price,
-          image: item.productId?.images?.[0] || '/placeholder.jpg'
+          image: item.product?.images?.[0] || item.productId?.images?.[0] || '/placeholder.jpg'
         }))
         
         return {
-          id: order.orderNumber || order._id.slice(-8),
+          id: order.orderNumber || order._id?.slice(-8) || 'N/A',
           date: new Date(order.createdAt).toLocaleDateString(),
           status: order.status,
           total: order.totalAmount,
@@ -88,7 +92,7 @@ export default function OrdersPage() {
           tracking: order.trackingNumber,
           shippingAddress: order.shippingAddress ? 
             `${order.shippingAddress.street}, ${order.shippingAddress.city}, ${order.shippingAddress.country}` : 
-            'N/A'
+            (order.address ? `${order.address}, ${order.city}` : 'N/A')
         }
       })
       

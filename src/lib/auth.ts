@@ -24,58 +24,56 @@ export interface Customer {
 }
 
 export async function loginCustomer(payload: LoginPayload) {
-  // Backend admin auth expects only a password; extra fields are ignored.
-  const res = await fetch(`${API_BASE_URL}/auth/login`, {
+  const res = await fetch(`${API_BASE_URL}/customers/login`, {
     method: 'POST',
     headers: {
       ...getCorsHeaders(),
       'Content-Type': 'application/json',
     },
     ...getCorsConfig(),
-    body: JSON.stringify({ password: payload.password }),
+    body: JSON.stringify({ email: payload.email, password: payload.password }),
   })
-  if (!res.ok) throw new Error('Login failed')
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Login failed' }))
+    throw new Error(error.message || 'Login failed')
+  }
   return res.json()
 }
 
 export async function registerCustomer(payload: RegisterPayload) {
-  // Backend admin auth expects only a password; treat this as admin registration.
-  const res = await fetch(`${API_BASE_URL}/auth/register`, {
+  const res = await fetch(`${API_BASE_URL}/customers/register`, {
     method: 'POST',
     headers: {
       ...getCorsHeaders(),
       'Content-Type': 'application/json',
     },
     ...getCorsConfig(),
-    body: JSON.stringify({ password: payload.password }),
+    body: JSON.stringify({
+      email: payload.email,
+      password: payload.password,
+      firstName: payload.firstName,
+      lastName: payload.lastName,
+      phone: payload.phone,
+    }),
   })
-  if (!res.ok) throw new Error('Registration failed')
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Registration failed' }))
+    throw new Error(error.message || 'Registration failed')
+  }
   return res.json()
 }
 
 export async function getCurrentUser(token: string): Promise<Customer> {
-  // Backend does not expose a profile endpoint; use /auth/status as a simple health check
-  const res = await fetch(`${API_BASE_URL}/auth/status`, {
+  const res = await fetch(`${API_BASE_URL}/customers/profile`, {
     method: 'GET',
     headers: {
       ...getCorsHeaders(),
+      'Authorization': `Bearer ${token}`,
     },
     ...getCorsConfig(),
   })
   if (!res.ok) throw new Error('Failed to get user')
-  const payload = await res.json()
-
-  // Synthesize a minimal Customer-like object from status since we only know that an admin exists.
-  return {
-    _id: 'admin',
-    firstName: 'Admin',
-    lastName: '',
-    email: 'admin@local',
-    phone: undefined,
-    addresses: [],
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  }
+  return res.json()
 }
 
 

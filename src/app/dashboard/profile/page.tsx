@@ -1,313 +1,182 @@
 'use client'
 
+import { useState, useEffect } from 'react'
+import { useCustomer } from '@/contexts/CustomerContext'
+import { getCurrentUser } from '@/lib/auth'
 import { motion } from 'framer-motion'
-import { User, Mail, Phone, Calendar, MapPin, Edit, Save, X } from 'lucide-react'
-import { useState } from 'react'
 
 export default function ProfilePage() {
-  const [isEditing, setIsEditing] = useState(false)
+  const { customer, token, refreshCustomer } = useCustomer()
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  
   const [formData, setFormData] = useState({
-    firstName: 'Sarah',
-    lastName: 'Johnson',
-    email: 'sarah.johnson@email.com',
-    phone: '+1 (555) 123-4567',
-    dateOfBirth: '1990-05-15',
-    address: '123 Main Street',
-    city: 'New York',
-    state: 'NY',
-    zipCode: '10001',
-    country: 'United States'
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
   })
 
-  const handleSave = () => {
-    // Here you would typically save to your backend
-    setIsEditing(false)
+  useEffect(() => {
+    if (customer) {
+      setFormData({
+        firstName: customer.firstName || '',
+        lastName: customer.lastName || '',
+        email: customer.email || '',
+        phone: customer.phone || '',
+      })
+    }
+  }, [customer])
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(false)
+    setSaving(true)
+
+    try {
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+      const response = await fetch(`${API_BASE_URL}/customers/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          phone: formData.phone,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile')
+      }
+
+      await refreshCustomer()
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update profile')
+    } finally {
+      setSaving(false)
+    }
   }
 
-  const handleCancel = () => {
-    setIsEditing(false)
-    // Reset form data if needed
+  if (!customer) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Profile Settings</h1>
-          <p className="text-gray-600">Manage your personal information</p>
-        </div>
-        <div className="flex gap-2">
-          {isEditing ? (
-            <>
-              <button
-                onClick={handleCancel}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <X className="h-4 w-4" />
-                Cancel
-              </button>
-              <button
-                onClick={handleSave}
-                className="btn-primary flex items-center gap-2"
-              >
-                <Save className="h-4 w-4" />
-                Save Changes
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => setIsEditing(true)}
-              className="btn-primary flex items-center gap-2"
-            >
-              <Edit className="h-4 w-4" />
-              Edit Profile
-            </button>
-          )}
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Profile Picture & Basic Info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="lg:col-span-1"
-        >
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <div className="text-center">
-              <div className="w-24 h-24 bg-gray-300 rounded-full mx-auto mb-4 flex items-center justify-center">
-                <User className="h-12 w-12 text-gray-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-900">
-                {formData.firstName} {formData.lastName}
-              </h3>
-              <p className="text-gray-600">{formData.email}</p>
-              <p className="text-sm text-gray-500 mt-2">Member since January 2023</p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Personal Information */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="lg:col-span-2"
-        >
-          <div className="bg-white rounded-2xl p-6 shadow-sm">
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">Personal Information</h2>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  First Name
-                </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : (
-                  <p className="text-gray-900">{formData.firstName}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Last Name
-                </label>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : (
-                  <p className="text-gray-900">{formData.lastName}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
-                {isEditing ? (
-                  <input
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : (
-                  <p className="text-gray-900">{formData.email}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                {isEditing ? (
-                  <input
-                    type="tel"
-                    value={formData.phone}
-                    onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : (
-                  <p className="text-gray-900">{formData.phone}</p>
-                )}
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Date of Birth
-                </label>
-                {isEditing ? (
-                  <input
-                    type="date"
-                    value={formData.dateOfBirth}
-                    onChange={(e) => setFormData({...formData, dateOfBirth: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                ) : (
-                  <p className="text-gray-900">{formData.dateOfBirth}</p>
-                )}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      </div>
-
-      {/* Address Information */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.2 }}
         className="bg-white rounded-2xl p-6 shadow-sm"
       >
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Address Information</h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Street Address
-            </label>
-            {isEditing ? (
+        <h1 className="text-2xl font-bold text-gray-900 mb-6">Profile Information</h1>
+
+        {error && (
+          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+            Profile updated successfully!
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                First Name
+              </label>
               <input
                 type="text"
-                value={formData.address}
-                onChange={(e) => setFormData({...formData, address: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                value={formData.firstName}
+                onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
               />
-            ) : (
-              <p className="text-gray-900">{formData.address}</p>
-            )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Last Name
+              </label>
+              <input
+                type="text"
+                value={formData.lastName}
+                onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              City
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Email
             </label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={formData.city}
-                onChange={(e) => setFormData({...formData, city: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            ) : (
-              <p className="text-gray-900">{formData.city}</p>
-            )}
+            <input
+              type="email"
+              value={formData.email}
+              disabled
+              className="w-full border rounded-lg px-4 py-2 bg-gray-50 text-gray-500 cursor-not-allowed"
+            />
+            <p className="mt-1 text-xs text-gray-500">Email cannot be changed</p>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              State
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Phone
             </label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={formData.state}
-                onChange={(e) => setFormData({...formData, state: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            ) : (
-              <p className="text-gray-900">{formData.state}</p>
-            )}
+            <input
+              type="tel"
+              value={formData.phone}
+              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+            />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              ZIP Code
-            </label>
-            {isEditing ? (
-              <input
-                type="text"
-                value={formData.zipCode}
-                onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            ) : (
-              <p className="text-gray-900">{formData.zipCode}</p>
-            )}
+          <div className="flex justify-end pt-4">
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-60 transition-colors"
+            >
+              {saving ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Country
-            </label>
-            {isEditing ? (
-              <select
-                value={formData.country}
-                onChange={(e) => setFormData({...formData, country: e.target.value})}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="United States">United States</option>
-                <option value="Canada">Canada</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-              </select>
-            ) : (
-              <p className="text-gray-900">{formData.country}</p>
-            )}
-          </div>
-        </div>
+        </form>
       </motion.div>
 
-      {/* Account Security */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: 0.3 }}
+        transition={{ delay: 0.1 }}
         className="bg-white rounded-2xl p-6 shadow-sm"
       >
-        <h2 className="text-lg font-semibold text-gray-900 mb-6">Account Security</h2>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div>
-              <h3 className="font-medium text-gray-900">Password</h3>
-              <p className="text-sm text-gray-600">Last updated 3 months ago</p>
-            </div>
-            <button className="px-4 py-2 text-sm text-blue-600 hover:text-blue-700 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors">
-              Change Password
-            </button>
+        <h2 className="text-xl font-semibold text-gray-900 mb-4">Account Details</h2>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Member since:</span>
+            <span className="text-gray-900">
+              {customer.createdAt ? new Date(customer.createdAt).toLocaleDateString() : 'N/A'}
+            </span>
           </div>
-
-          <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-            <div>
-              <h3 className="font-medium text-gray-900">Two-Factor Authentication</h3>
-              <p className="text-sm text-gray-600">Add an extra layer of security</p>
-            </div>
-            <button className="px-4 py-2 text-sm text-gray-600 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-              Enable 2FA
-            </button>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Account status:</span>
+            <span className="text-green-600 font-medium">Active</span>
           </div>
         </div>
       </motion.div>

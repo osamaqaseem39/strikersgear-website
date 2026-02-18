@@ -1,386 +1,367 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { MapPin, Plus, Edit, Trash2, Check } from 'lucide-react'
 import { useState, useEffect } from 'react'
 import { useCustomer } from '@/contexts/CustomerContext'
-import { apiClient } from '@/lib/api'
-
-interface Address {
-  id: string
-  type: string
-  name: string
-  address: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
-  phone: string
-  isDefault: boolean
-}
+import { motion } from 'framer-motion'
+import { MapPin, Plus, Edit, Trash2 } from 'lucide-react'
 
 export default function AddressesPage() {
-  const { customer } = useCustomer()
-  const [isAddingNew, setIsAddingNew] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [addressList, setAddressList] = useState<Address[]>([])
-  const [loading, setLoading] = useState(true)
+  const { customer, token, refreshCustomer } = useCustomer()
+  const [loading, setLoading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [showForm, setShowForm] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
 
-  useEffect(() => {
-    if (customer?._id) {
-      fetchAddresses()
-    } else {
-      setLoading(false)
-    }
-  }, [customer])
-
-  const fetchAddresses = async () => {
-    try {
-      setLoading(true)
-      // TODO: Replace with actual API call when addresses API is available
-      // const response = await apiClient.getCustomerAddresses(customer._id)
-      // setAddressList(response.data || [])
-      setAddressList([])
-    } catch (error) {
-      console.error('Failed to fetch addresses:', error)
-      setAddressList([])
-    } finally {
-      setLoading(false)
-    }
-  }
   const [formData, setFormData] = useState({
-    type: 'Home',
-    name: '',
-    address: '',
+    street: '',
     city: '',
     state: '',
-    zipCode: '',
-    country: 'United States',
-    phone: ''
+    country: 'Pakistan',
+    postalCode: '',
+    isDefault: false,
   })
 
-  const handleAddAddress = () => {
-    if (formData.name && formData.address && formData.city) {
-      const newAddress = {
-        id: Date.now().toString(),
-        ...formData,
-        isDefault: addressList.length === 0
+  const addresses = customer?.addresses || []
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError(null)
+    setSuccess(false)
+    setSaving(true)
+
+    try {
+      const updatedAddresses = [...addresses]
+      
+      if (editingIndex !== null) {
+        updatedAddresses[editingIndex] = formData
+      } else {
+        // If this is the first address or marked as default, set it as default
+        if (formData.isDefault || updatedAddresses.length === 0) {
+          updatedAddresses.forEach(addr => addr.isDefault = false)
+          formData.isDefault = true
+        }
+        updatedAddresses.push(formData)
       }
-      setAddressList([...addressList, newAddress])
-      setIsAddingNew(false)
+
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+      const response = await fetch(`${API_BASE_URL}/customers/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ addresses: updatedAddresses }),
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update addresses')
+      }
+
+      await refreshCustomer()
+      setSuccess(true)
+      setShowForm(false)
+      setEditingIndex(null)
       setFormData({
-        type: 'Home',
-        name: '',
-        address: '',
+        street: '',
         city: '',
         state: '',
-        zipCode: '',
-        country: 'United States',
-        phone: ''
+        country: 'Pakistan',
+        postalCode: '',
+        isDefault: false,
       })
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update addresses')
+    } finally {
+      setSaving(false)
     }
   }
 
-  const handleEditAddress = (id: string) => {
-    const address = addressList.find(addr => addr.id === id)
-    if (address) {
-      setFormData({
-        type: address.type,
-        name: address.name,
-        address: address.address,
-        city: address.city,
-        state: address.state,
-        zipCode: address.zipCode,
-        country: address.country,
-        phone: address.phone
+  const handleEdit = (index: number) => {
+    const address = addresses[index]
+    setFormData({
+      street: address.street || '',
+      city: address.city || '',
+      state: address.state || '',
+      country: address.country || 'Pakistan',
+      postalCode: address.postalCode || '',
+      isDefault: address.isDefault || false,
+    })
+    setEditingIndex(index)
+    setShowForm(true)
+  }
+
+  const handleDelete = async (index: number) => {
+    if (!confirm('Are you sure you want to delete this address?')) return
+
+    try {
+      const updatedAddresses = addresses.filter((_, i) => i !== index)
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+      const response = await fetch(`${API_BASE_URL}/customers/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ addresses: updatedAddresses }),
       })
-      setEditingId(id)
+
+      if (!response.ok) {
+        throw new Error('Failed to delete address')
+      }
+
+      await refreshCustomer()
+    } catch (err: any) {
+      setError(err?.message || 'Failed to delete address')
     }
   }
 
-  const handleUpdateAddress = () => {
-    if (editingId) {
-      setAddressList(addressList.map(addr => 
-        addr.id === editingId ? { ...addr, ...formData } : addr
-      ))
-      setEditingId(null)
-      setFormData({
-        type: 'Home',
-        name: '',
-        address: '',
-        city: '',
-        state: '',
-        zipCode: '',
-        country: 'United States',
-        phone: ''
+  const handleSetDefault = async (index: number) => {
+    try {
+      const updatedAddresses = addresses.map((addr, i) => ({
+        ...addr,
+        isDefault: i === index,
+      }))
+
+      const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+      const response = await fetch(`${API_BASE_URL}/customers/profile`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ addresses: updatedAddresses }),
       })
+
+      if (!response.ok) {
+        throw new Error('Failed to update default address')
+      }
+
+      await refreshCustomer()
+    } catch (err: any) {
+      setError(err?.message || 'Failed to update default address')
     }
-  }
-
-  const handleDeleteAddress = (id: string) => {
-    setAddressList(addressList.filter(addr => addr.id !== id))
-  }
-
-  const handleSetDefault = (id: string) => {
-    setAddressList(addressList.map(addr => ({
-      ...addr,
-      isDefault: addr.id === id
-    })))
-  }
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    )
   }
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Addresses</h1>
-          <p className="text-gray-600">Manage your shipping addresses</p>
-        </div>
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold text-gray-900">Shipping Addresses</h1>
         <button
-          onClick={() => setIsAddingNew(true)}
-          className="btn-primary flex items-center justify-center gap-2 w-full sm:w-auto"
+          onClick={() => {
+            setShowForm(!showForm)
+            setEditingIndex(null)
+            setFormData({
+              street: '',
+              city: '',
+              state: '',
+              country: 'Pakistan',
+              postalCode: '',
+              isDefault: false,
+            })
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
         >
-          <Plus className="h-4 w-4" />
-          Add New Address
+          <Plus className="h-5 w-5" />
+          Add Address
         </button>
       </div>
 
-      {/* Address List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {addressList.map((address, index) => (
-          <motion.div
-            key={address.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.1 }}
-            className="bg-white rounded-2xl p-6 shadow-sm border-2 border-transparent hover:border-gray-200 transition-colors"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-gray-600" />
-                <span className="font-medium text-gray-900">{address.type}</span>
-                {address.isDefault && (
-                  <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full font-medium">
-                    Default
-                  </span>
-                )}
-              </div>
-              <div className="flex gap-1">
-                <button
-                  onClick={() => handleEditAddress(address.id)}
-                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <Edit className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => handleDeleteAddress(address.id)}
-                  className="p-1 text-gray-400 hover:text-red-600 transition-colors"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+      {error && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+          {error}
+        </div>
+      )}
 
-            <div className="space-y-2 text-sm text-gray-600">
-              <p className="font-medium text-gray-900">{address.name}</p>
-              <p>{address.address}</p>
-              <p>{address.city}, {address.state} {address.zipCode}</p>
-              <p>{address.country}</p>
-              <p>{address.phone}</p>
-            </div>
+      {success && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+          Address saved successfully!
+        </div>
+      )}
 
-            {!address.isDefault && (
-              <button
-                onClick={() => handleSetDefault(address.id)}
-                className="mt-4 w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                <Check className="h-4 w-4" />
-                Set as Default
-              </button>
-            )}
-          </motion.div>
-        ))}
-      </div>
-
-      {/* Add/Edit Form Modal */}
-      {(isAddingNew || editingId) && (
+      {showForm && (
         <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-white rounded-2xl p-6 shadow-sm"
         >
-          <motion.div
-            initial={{ scale: 0.9, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-2xl p-6 w-full max-w-md max-h-[90vh] overflow-y-auto"
-          >
-            <h2 className="text-lg font-semibold text-gray-900 mb-6">
-              {isAddingNew ? 'Add New Address' : 'Edit Address'}
-            </h2>
+          <h2 className="text-xl font-semibold text-gray-900 mb-4">
+            {editingIndex !== null ? 'Edit Address' : 'Add New Address'}
+          </h2>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Street Address
+              </label>
+              <input
+                type="text"
+                value={formData.street}
+                onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                required
+              />
+            </div>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Address Type
-                </label>
-                <select
-                  value={formData.type}
-                  onChange={(e) => setFormData({...formData, type: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="Home">Home</option>
-                  <option value="Work">Work</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Full Name
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  City
                 </label>
                 <input
                   type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Street Address
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  State/Province
                 </label>
                 <input
                   type="text"
-                  value={formData.address}
-                  onChange={(e) => setFormData({...formData, address: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    City
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.city}
-                    onChange={(e) => setFormData({...formData, city: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.state}
-                    onChange={(e) => setFormData({...formData, state: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    ZIP Code
-                  </label>
-                  <input
-                    type="text"
-                    value={formData.zipCode}
-                    onChange={(e) => setFormData({...formData, zipCode: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Country
-                  </label>
-                  <select
-                    value={formData.country}
-                    onChange={(e) => setFormData({...formData, country: e.target.value})}
-                    className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    <option value="United States">United States</option>
-                    <option value="Canada">Canada</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Australia">Australia</option>
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Phone Number
-                </label>
-                <input
-                  type="tel"
-                  value={formData.phone}
-                  onChange={(e) => setFormData({...formData, phone: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 mt-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Country
+                </label>
+                <input
+                  type="text"
+                  value={formData.country}
+                  onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  value={formData.postalCode}
+                  onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                  className="w-full border rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary-500"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                id="isDefault"
+                checked={formData.isDefault}
+                onChange={(e) => setFormData({ ...formData, isDefault: e.target.checked })}
+                className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
+              />
+              <label htmlFor="isDefault" className="ml-2 text-sm text-gray-700">
+                Set as default address
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4">
               <button
+                type="button"
                 onClick={() => {
-                  setIsAddingNew(false)
-                  setEditingId(null)
-                  setFormData({
-                    type: 'Home',
-                    name: '',
-                    address: '',
-                    city: '',
-                    state: '',
-                    zipCode: '',
-                    country: 'United States',
-                    phone: ''
-                  })
+                  setShowForm(false)
+                  setEditingIndex(null)
                 }}
-                className="flex-1 px-4 py-2 text-gray-600 hover:text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+                className="px-6 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={isAddingNew ? handleAddAddress : handleUpdateAddress}
-                className="flex-1 btn-primary"
+                type="submit"
+                disabled={saving}
+                className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-60 transition-colors"
               >
-                {isAddingNew ? 'Add Address' : 'Update Address'}
+                {saving ? 'Saving...' : 'Save Address'}
               </button>
             </div>
-          </motion.div>
+          </form>
         </motion.div>
       )}
 
-      {/* Empty State */}
-      {addressList.length === 0 && !isAddingNew && (
+      {addresses.length === 0 && !showForm ? (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="text-center py-12"
+          className="bg-white rounded-2xl p-12 shadow-sm text-center"
         >
           <MapPin className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No addresses saved</h3>
-          <p className="text-gray-600 mb-6">Add your first address to get started</p>
+          <p className="text-gray-600 mb-4">No addresses saved yet</p>
           <button
-            onClick={() => setIsAddingNew(true)}
-            className="btn-primary"
+            onClick={() => setShowForm(true)}
+            className="px-6 py-2 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors"
           >
-            Add Address
+            Add Your First Address
           </button>
         </motion.div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {addresses.map((address, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
+              className="bg-white rounded-2xl p-6 shadow-sm border-2 border-transparent hover:border-gray-200 transition-colors"
+            >
+              {address.isDefault && (
+                <span className="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full mb-3">
+                  Default
+                </span>
+              )}
+              <div className="space-y-2 mb-4">
+                <p className="font-medium text-gray-900">{address.street}</p>
+                <p className="text-sm text-gray-600">
+                  {address.city}
+                  {address.state && `, ${address.state}`}
+                </p>
+                <p className="text-sm text-gray-600">
+                  {address.country}
+                  {address.postalCode && ` ${address.postalCode}`}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {!address.isDefault && (
+                  <button
+                    onClick={() => handleSetDefault(index)}
+                    className="text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    Set as default
+                  </button>
+                )}
+                <button
+                  onClick={() => handleEdit(index)}
+                  className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+                >
+                  <Edit className="h-4 w-4" />
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(index)}
+                  className="flex items-center gap-1 text-sm text-red-600 hover:text-red-700 ml-auto"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </div>
       )}
     </div>
   )

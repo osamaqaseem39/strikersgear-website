@@ -16,7 +16,7 @@ interface Order {
 }
 
 export default function Dashboard() {
-  const { customer, isLoading: customerLoading } = useCustomer()
+  const { customer, isLoading: customerLoading, token } = useCustomer()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
   const [stats, setStats] = useState({
@@ -27,20 +27,20 @@ export default function Dashboard() {
   })
 
   useEffect(() => {
-    if (!customerLoading && customer) {
+    if (!customerLoading && customer && token) {
       fetchDashboardData()
     } else if (!customerLoading && !customer) {
       setLoading(false)
     }
-  }, [customer, customerLoading])
+  }, [customer, customerLoading, token])
 
   const fetchDashboardData = async () => {
     try {
       setLoading(true)
-      if (!customer?._id) return
+      if (!customer?._id || !token) return
 
       // Fetch recent orders
-      const response = await apiClient.getCustomerOrders(customer._id, { page: 1, limit: 5 })
+      const response = await apiClient.getCustomerOrders(customer._id, { page: 1, limit: 5 }, token)
       const fetchedOrders = response.data || []
       setOrders(fetchedOrders)
       

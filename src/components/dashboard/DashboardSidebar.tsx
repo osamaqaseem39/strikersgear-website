@@ -20,11 +20,10 @@ import { motion, AnimatePresence } from 'framer-motion'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Orders', href: '/dashboard/orders', icon: Package },
-  { name: 'Wishlist', href: '/dashboard/wishlist', icon: Heart },
+  { name: 'Billing', href: '/dashboard/billing', icon: CreditCard },
   { name: 'Addresses', href: '/dashboard/addresses', icon: MapPin },
-  { name: 'Payment Methods', href: '/dashboard/payment', icon: CreditCard },
   { name: 'Profile', href: '/dashboard/profile', icon: Star },
-  { name: 'Settings', href: '/dashboard/settings', icon: Settings },
+  { name: 'Wishlist', href: '/dashboard/wishlist', icon: Heart },
 ]
 
 export default function DashboardSidebar() {

@@ -674,21 +674,56 @@ class ApiClient {
     }
   }
 
-  // Orders API - simple client-side filtering over /orders
-  async getCustomerOrders(customerId: string, filters: { page?: number; limit?: number } = {}): Promise<PaginatedResponse<any>> {
-    // Backend does not yet expose customer-specific orders; fetch all and filter by phone/session if needed.
-    const all = await this.request<any[]>('/orders')
+  // Orders API - customer-specific orders
+  async getCustomerOrders(customerId: string, filters: { page?: number; limit?: number; status?: string } = {}, token?: string): Promise<PaginatedResponse<any>> {
     const page = filters.page ?? 1
     const limit = filters.limit ?? 20
-
-    // For now, return all orders (no real customer linkage available)
-    const total = all.length
+    
+    // Use authenticated endpoint if token is provided
+    if (token) {
+      const headers: Record<string, string> = {
+        ...getCorsHeaders(),
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      const url = `/orders/my-orders${filters.status ? `?status=${filters.status}` : ''}`
+      const response = await fetch(`${this.baseURL}${url}`, {
+        headers,
+        ...getCorsConfig(),
+      })
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
+      const all = await response.json()
+      const total = Array.isArray(all) ? all.length : 0
+      const totalPages = total > 0 ? Math.ceil(total / limit) : 1
+      const start = (page - 1) * limit
+      const end = start + limit
+      
+      return {
+        data: Array.isArray(all) ? all.slice(start, end) : [],
+        total,
+        page,
+        limit,
+        totalPages,
+        hasNext: page < totalPages,
+        hasPrev: page > 1,
+      }
+    }
+    
+    // Fallback to customer ID endpoint
+    const all = await this.request<any[]>(`/orders/customer/${customerId}${filters.status ? `?status=${filters.status}` : ''}`)
+    const total = Array.isArray(all) ? all.length : 0
     const totalPages = total > 0 ? Math.ceil(total / limit) : 1
     const start = (page - 1) * limit
     const end = start + limit
 
     return {
-      data: all.slice(start, end),
+      data: Array.isArray(all) ? all.slice(start, end) : [],
       total,
       page,
       limit,
