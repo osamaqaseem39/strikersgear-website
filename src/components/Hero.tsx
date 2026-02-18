@@ -90,10 +90,10 @@ export default function Hero() {
     const interval = setInterval(() => {
       setDirection(1)
       setCurrentSlide((prev) => (prev + 1) % banners.length)
-    }, 4000) // Change slide every 4 seconds
+    }, 5000) // Change slide every 5 seconds
 
     return () => clearInterval(interval)
-  }, [isAutoPlaying, banners])
+  }, [isAutoPlaying, banners.length])
 
   // Resume auto-play after 10 seconds of user inactivity
   useEffect(() => {
