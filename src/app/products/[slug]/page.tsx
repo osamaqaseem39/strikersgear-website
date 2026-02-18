@@ -286,9 +286,9 @@ export default function ProductPage() {
                               }`}
                             >
                               {isExt ? (
-                                <Image src={imageUrl} alt="" fill className="object-contain aspect-square" unoptimized sizes="80px" />
+                                <Image src={imageUrl} alt="" fill className="object-cover aspect-square" unoptimized sizes="80px" />
                               ) : (
-                                <img src={imageUrl} alt="" className="w-full h-full object-contain aspect-square" onError={(e) => { e.currentTarget.src = '/images/1.png' }} />
+                                <img src={imageUrl} alt="" className="w-full h-full object-cover aspect-square" onError={(e) => { e.currentTarget.src = '/images/1.png' }} />
                               )}
                             </button>
                           )
@@ -297,49 +297,51 @@ export default function ProductPage() {
                     )}
 
                     {/* Main Image Slider - 1:1 Container and Image */}
-                    <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2 min-h-[280px] sm:min-h-0">
-                      <div key={selectedImage} className="absolute inset-0">
-                        {isExternalUrl ? (
-                          <Image
-                            src={imageSrc}
-                            alt={product.name || 'Product'}
-                            fill
-                            className="object-contain aspect-square transition-opacity duration-300"
-                            unoptimized
-                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                          />
-                        ) : (
-                          <img
-                            src={imageSrc}
-                            alt={product.name || 'Product'}
-                            className="absolute inset-0 w-full h-full object-contain aspect-square transition-opacity duration-300"
-                            onError={(e) => { e.currentTarget.src = '/images/1.png' }}
-                          />
+                    <div className="relative w-full order-1 sm:order-2 flex-1">
+                      <div className="relative w-full aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100">
+                        <div key={selectedImage} className="absolute inset-0">
+                          {isExternalUrl ? (
+                            <Image
+                              src={imageSrc}
+                              alt={product.name || 'Product'}
+                              fill
+                              className="object-cover transition-opacity duration-300"
+                              unoptimized
+                              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                          ) : (
+                            <img
+                              src={imageSrc}
+                              alt={product.name || 'Product'}
+                              className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                              onError={(e) => { e.currentTarget.src = '/images/1.png' }}
+                            />
+                          )}
+                        </div>
+
+                        {/* Badges */}
+                        <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+                          {product.isNew && <span className="bg-primary-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">New</span>}
+                          {product.isSale && <span className="bg-secondary-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">Sale</span>}
+                        </div>
+
+                        {/* Slider Arrows */}
+                        {imageArray.length > 1 && (
+                          <>
+                            <button type="button" onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10" aria-label="Previous image">
+                              <ChevronLeft className="h-5 w-5 text-gray-700" />
+                            </button>
+                            <button type="button" onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10" aria-label="Next image">
+                              <ChevronRight className="h-5 w-5 text-gray-700" />
+                            </button>
+                          </>
                         )}
+
+                        {/* Wishlist */}
+                        <button type="button" onClick={handleWishlist} className={`absolute top-4 right-4 p-3 rounded-full shadow-xl transition-all duration-200 hover:scale-110 z-10 ${isWishlisted ? 'bg-primary-600 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-white'}`} aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}>
+                          <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
+                        </button>
                       </div>
-
-                      {/* Badges */}
-                      <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-                        {product.isNew && <span className="bg-primary-600 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">New</span>}
-                        {product.isSale && <span className="bg-secondary-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md">Sale</span>}
-                      </div>
-
-                      {/* Slider Arrows */}
-                      {imageArray.length > 1 && (
-                        <>
-                          <button type="button" onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10" aria-label="Previous image">
-                            <ChevronLeft className="h-5 w-5 text-gray-700" />
-                          </button>
-                          <button type="button" onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 bg-white/90 backdrop-blur-sm rounded-full p-3 shadow-xl hover:bg-white transition-all duration-200 hover:scale-110 z-10" aria-label="Next image">
-                            <ChevronRight className="h-5 w-5 text-gray-700" />
-                          </button>
-                        </>
-                      )}
-
-                      {/* Wishlist */}
-                      <button type="button" onClick={handleWishlist} className={`absolute top-4 right-4 p-3 rounded-full shadow-xl transition-all duration-200 hover:scale-110 z-10 ${isWishlisted ? 'bg-primary-600 text-white' : 'bg-white/90 backdrop-blur-sm text-gray-600 hover:bg-white'}`} aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}>
-                        <Heart className={`h-5 w-5 ${isWishlisted ? 'fill-current' : ''}`} />
-                      </button>
                     </div>
                   </div>
                 )

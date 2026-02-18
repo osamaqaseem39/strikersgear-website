@@ -238,7 +238,7 @@ export default function MobileProductPage() {
               src={mainImageUrl}
               alt={product.name || 'Product'}
               fill
-              className="object-contain aspect-square"
+              className="object-cover aspect-square"
               unoptimized={true}
               sizes="100vw"
             />
@@ -246,7 +246,7 @@ export default function MobileProductPage() {
             <img
               src={mainImageUrl}
               alt={product.name || 'Product'}
-              className="absolute inset-0 w-full h-full object-contain aspect-square"
+              className="absolute inset-0 w-full h-full object-cover aspect-square"
               onError={(e) => {
                 e.currentTarget.src = '/images/1.png'
               }}
@@ -317,7 +317,7 @@ export default function MobileProductPage() {
                         src={imageUrl}
                         alt={`${product.name} ${index + 1}`}
                         fill
-                        className="object-contain aspect-square"
+                        className="object-cover aspect-square"
                         unoptimized
                         sizes="80px"
                       />
@@ -325,7 +325,7 @@ export default function MobileProductPage() {
                       <img
                         src={imageUrl}
                         alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-contain aspect-square"
+                        className="w-full h-full object-cover aspect-square"
                         onError={(e) => { e.currentTarget.src = '/images/1.png' }}
                       />
                     )}
