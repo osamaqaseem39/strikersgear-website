@@ -230,7 +230,7 @@ export default function MobileProductPage() {
         </div>
       </div>
 
-      {/* Product Images - Mobile Optimized */}
+      {/* Product Images - Mobile Optimized - 1:1 Container */}
       <div className="relative bg-white">
         <div className="relative aspect-square bg-gray-100">
           {isExternalUrl ? (
@@ -238,7 +238,7 @@ export default function MobileProductPage() {
               src={mainImageUrl}
               alt={product.name || 'Product'}
               fill
-              className="object-cover"
+              className="object-cover w-full h-full"
               unoptimized={true}
               sizes="100vw"
             />
@@ -308,7 +308,7 @@ export default function MobileProductPage() {
                     key={index}
                     type="button"
                     onClick={() => setSelectedImage(index)}
-                    className={`relative flex-shrink-0 w-16 h-20 rounded-lg overflow-hidden border-2 transition-all ${
+                    className={`relative flex-shrink-0 w-16 h-16 aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                       selectedImage === index ? 'border-primary-600 ring-2 ring-primary-200' : 'border-gray-200'
                     }`}
                   >

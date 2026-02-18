@@ -279,7 +279,7 @@ export default function ProductPage() {
                               key={index}
                               type="button"
                               onClick={() => setSelectedImage(index)}
-                              className={`relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-20 rounded-lg overflow-hidden border-2 transition-all duration-200 ${
+                              className={`relative flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 aspect-square rounded-lg overflow-hidden border-2 transition-all duration-200 ${
                                 selectedImage === index
                                   ? 'border-primary-600 ring-2 ring-primary-200 shadow-md'
                                   : 'border-gray-200 hover:border-primary-400 hover:shadow-sm'
@@ -296,7 +296,7 @@ export default function ProductPage() {
                       </div>
                     )}
 
-                    {/* Main Image Slider */}
+                    {/* Main Image Slider - 1:1 Container */}
                     <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2 min-h-[280px] sm:min-h-0">
                       <div key={selectedImage} className="absolute inset-0">
                         {isExternalUrl ? (
@@ -304,7 +304,7 @@ export default function ProductPage() {
                             src={imageSrc}
                             alt={product.name || 'Product'}
                             fill
-                            className="object-contain transition-opacity duration-300"
+                            className="object-cover transition-opacity duration-300"
                             unoptimized
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
@@ -312,7 +312,7 @@ export default function ProductPage() {
                           <img
                             src={imageSrc}
                             alt={product.name || 'Product'}
-                            className="absolute inset-0 w-full h-full object-contain transition-opacity duration-300"
+                            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
                             onError={(e) => { e.currentTarget.src = '/images/1.png' }}
                           />
                         )}
