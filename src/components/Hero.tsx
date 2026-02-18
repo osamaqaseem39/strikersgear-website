@@ -42,6 +42,7 @@ export default function Hero() {
             banner => !banner.position || banner.position === 'hero'
           )
           console.log(`Loaded ${heroBanners.length} banner(s) from backend (filtered by position):`, heroBanners)
+          console.log('Banner imageUrls:', heroBanners.map(b => ({ id: b._id, imageUrl: b.imageUrl, title: b.title })))
           setBanners(heroBanners)
         } else {
           console.warn('No banners found from backend')
@@ -63,11 +64,19 @@ export default function Hero() {
   useEffect(() => {
     // Auto-slide only if there are multiple banners
     // Position field is already filtered in fetchBanners, so all banners here are eligible
-    if (!isAutoPlaying || banners.length <= 1) return
+    if (!isAutoPlaying || banners.length <= 1) {
+      console.log('Auto-slide disabled:', { isAutoPlaying, bannerCount: banners.length })
+      return
+    }
 
+    console.log('Auto-slide enabled for', banners.length, 'banners')
     const interval = setInterval(() => {
       setDirection(1)
-      setCurrentSlide((prev) => (prev + 1) % banners.length)
+      setCurrentSlide((prev) => {
+        const next = (prev + 1) % banners.length
+        console.log('Auto-sliding from', prev, 'to', next)
+        return next
+      })
     }, 5000) // Change slide every 5 seconds
 
     return () => clearInterval(interval)
@@ -103,10 +112,21 @@ export default function Hero() {
   }
 
   // Don't render if loading or no banners
-  if (loading || banners.length === 0) {
+  if (loading) {
     return (
       <section className="relative w-full overflow-hidden max-w-full aspect-video">
         <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+      </section>
+    )
+  }
+
+  if (banners.length === 0) {
+    console.warn('No banners to display')
+    return (
+      <section className="relative w-full overflow-hidden max-w-full aspect-video">
+        <div className="absolute inset-0 bg-gray-200 flex items-center justify-center">
+          <span className="text-gray-500">No banners available</span>
+        </div>
       </section>
     )
   }
@@ -133,16 +153,25 @@ export default function Hero() {
                 <Link href={bannerLink} className="block w-full h-full cursor-pointer">
                   {/* Background Image */}
                   <div className="absolute inset-0 overflow-hidden">
-                    <Image
-                      src={banner.imageUrl}
-                      alt={banner.altText || banner.title}
-                      fill
-                      priority={index === 0}
-                      fetchPriority={index === 0 ? 'high' : 'auto'}
-                      quality={85}
-                      sizes="100vw"
-                      className="object-contain w-full h-full"
-                    />
+                    {banner.imageUrl ? (
+                      <Image
+                        src={banner.imageUrl}
+                        alt={banner.altText || banner.title}
+                        fill
+                        priority={index === 0}
+                        fetchPriority={index === 0 ? 'high' : 'auto'}
+                        quality={85}
+                        sizes="100vw"
+                        className="object-contain w-full h-full"
+                        onError={(e) => {
+                          console.error('Image load error:', banner.imageUrl, e)
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-200 flex items-center justify-center">
+                        <span className="text-gray-500">No image</span>
+                      </div>
+                    )}
                   </div>
                 </Link>
               </motion.div>
