@@ -754,6 +754,7 @@ class ApiClient {
     altText?: string
     linkUrl?: string
     linkText?: string
+    position?: string
   }>> {
     // Backend supports /banners with ?activeOnly=true
     const response = await this.request<any[]>(`/banners?activeOnly=true`)
@@ -769,6 +770,7 @@ class ApiClient {
       altText: banner.title || banner.subtitle || 'Hero banner',
       linkUrl: banner.buttonLink || '/shop',
       linkText: banner.buttonText || 'Shop Now',
+      position: banner.position,
     }))
   }
 

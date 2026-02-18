@@ -16,6 +16,7 @@ interface Banner {
   altText?: string
   linkUrl?: string
   linkText?: string
+  position?: string
 }
 
 export default function Hero() {
@@ -25,56 +26,30 @@ export default function Hero() {
   const [loading, setLoading] = useState(true)
   const [direction, setDirection] = useState(1) // 1 for next, -1 for previous
 
-  // Fetch banners from backend
+  // Fetch all banners from backend dynamically
   useEffect(() => {
     const fetchBanners = async () => {
       try {
         setLoading(true)
+        // Fetch all active banners from backend
         const fetchedBanners = await apiClient.getHeroBanners()
-        if (fetchedBanners && fetchedBanners.length > 0) {
-          setBanners(fetchedBanners)
+        
+        // Filter banners by position="hero" or banners without position field
+        // Dynamically set all banners from backend (works with any number of banners)
+        if (fetchedBanners && Array.isArray(fetchedBanners) && fetchedBanners.length > 0) {
+          // Filter banners: only show those with position="hero" or no position field
+          const heroBanners = fetchedBanners.filter(
+            banner => !banner.position || banner.position === 'hero'
+          )
+          console.log(`Loaded ${heroBanners.length} banner(s) from backend (filtered by position):`, heroBanners)
+          setBanners(heroBanners)
         } else {
-          // Fallback to default banners if none found
-          setBanners([
-            {
-              _id: '1',
-              title: 'Élégance',
-              subtitle: 'Couture',
-              description: 'Exclusive couture for the sophisticated woman. Discover our curated collection of women\'s fashion, designer dresses, and premium accessories.',
-              imageUrl: '/images/banner1.png',
-              altText: 'Women\'s Couture',
-            },
-            {
-              _id: '2',
-              title: 'Timeless',
-              subtitle: 'Elegance',
-              description: 'Exclusive couture for the sophisticated woman. Discover our curated collection of women\'s fashion, designer dresses, and premium accessories.',
-              imageUrl: '/images/banner2.png',
-              altText: 'Fashion Collection',
-            }
-          ])
+          console.warn('No banners found from backend')
+          setBanners([])
         }
       } catch (error) {
-        console.error('Error fetching banners:', error)
-        // Fallback to default banners on error
-        setBanners([
-          {
-            _id: '1',
-            title: 'Élégance',
-            subtitle: 'Couture',
-            description: 'Exclusive couture for the sophisticated woman. Discover our curated collection of women\'s fashion, designer dresses, and premium accessories.',
-            imageUrl: '/images/banner1.png',
-            altText: 'Women\'s Couture',
-          },
-          {
-            _id: '2',
-            title: 'Timeless',
-            subtitle: 'Elegance',
-            description: 'Exclusive couture for the sophisticated woman. Discover our curated collection of women\'s fashion, designer dresses, and premium accessories.',
-            imageUrl: '/images/banner2.png',
-            altText: 'Fashion Collection',
-          }
-        ])
+        console.error('Error fetching banners from backend:', error)
+        setBanners([])
       } finally {
         setLoading(false)
       }
@@ -84,7 +59,10 @@ export default function Hero() {
   }, [])
 
   // Auto-play functionality - rotates banners automatically
+  // Only auto-slide if there are multiple banners and position allows it
   useEffect(() => {
+    // Auto-slide only if there are multiple banners
+    // Position field is already filtered in fetchBanners, so all banners here are eligible
     if (!isAutoPlaying || banners.length <= 1) return
 
     const interval = setInterval(() => {
