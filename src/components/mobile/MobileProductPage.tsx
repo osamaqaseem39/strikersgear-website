@@ -186,9 +186,12 @@ export default function MobileProductPage() {
     return `/${imageUrl}`
   }
 
-  const imageArray = (Array.isArray(product.images) && product.images.length > 0)
-    ? product.images
-    : (Array.isArray((product as any).gallery) ? (product as any).gallery : [])
+  // Combine images and gallery arrays, removing duplicates
+  const imagesList = Array.isArray(product.images) ? product.images : []
+  const galleryList = Array.isArray((product as any).gallery) ? (product as any).gallery : []
+  const combinedImages = [...imagesList, ...galleryList]
+  // Remove duplicates by converting to Set and back to array
+  const imageArray = Array.from(new Set(combinedImages)).filter(Boolean)
   const mainImageUrl = imageArray.length > 0
     ? normalizeImageUrl(imageArray[selectedImage] || imageArray[0])
     : '/images/1.png'
