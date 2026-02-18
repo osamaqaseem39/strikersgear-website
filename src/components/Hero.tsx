@@ -23,6 +23,7 @@ export default function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
   const [isAutoPlaying, setIsAutoPlaying] = useState(true)
   const [loading, setLoading] = useState(true)
+  const [direction, setDirection] = useState(1) // 1 for next, -1 for previous
 
   // Fetch banners from backend
   useEffect(() => {
@@ -87,11 +88,12 @@ export default function Hero() {
     if (!isAutoPlaying || banners.length <= 1) return
 
     const interval = setInterval(() => {
+      setDirection(1)
       setCurrentSlide((prev) => (prev + 1) % banners.length)
     }, 4000) // Change slide every 4 seconds
 
     return () => clearInterval(interval)
-  }, [isAutoPlaying, banners.length])
+  }, [isAutoPlaying, banners])
 
   // Resume auto-play after 10 seconds of user inactivity
   useEffect(() => {
@@ -105,16 +107,19 @@ export default function Hero() {
   }, [isAutoPlaying])
 
   const nextSlide = () => {
+    setDirection(1)
     setCurrentSlide((prev) => (prev + 1) % banners.length)
     setIsAutoPlaying(false)
   }
 
   const prevSlide = () => {
+    setDirection(-1)
     setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length)
     setIsAutoPlaying(false)
   }
 
   const goToSlide = (index: number) => {
+    setDirection(index > currentSlide ? 1 : -1)
     setCurrentSlide(index)
     setIsAutoPlaying(false)
   }
@@ -131,22 +136,23 @@ export default function Hero() {
   return (
     <section className="relative w-full overflow-hidden max-w-full aspect-video">
       {/* Slider Container */}
-      <div className="relative w-full h-full max-w-full">
-        <AnimatePresence mode="wait">
+      <div className="relative w-full h-full max-w-full overflow-hidden">
+        <AnimatePresence mode="wait" initial={false}>
           {banners.map((banner, index) => {
             if (index !== currentSlide) return null
 
             const bannerLink = banner.linkUrl || '/shop'
             
             return (
-              <Link href={bannerLink} key={banner._id || index}>
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.8 }}
-                  className="absolute inset-0 cursor-pointer"
-                >
+              <motion.div
+                key={banner._id || index}
+                initial={{ opacity: 0, x: direction * 100 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: direction * -100 }}
+                transition={{ duration: 0.6, ease: "easeInOut" }}
+                className="absolute inset-0 w-full h-full"
+              >
+                <Link href={bannerLink} className="block w-full h-full cursor-pointer">
                   {/* Background Image */}
                   <div className="absolute inset-0 overflow-hidden">
                     <Image
@@ -160,9 +166,8 @@ export default function Hero() {
                       className="object-contain w-full h-full"
                     />
                   </div>
-
+                </Link>
               </motion.div>
-              </Link>
             )
           })}
         </AnimatePresence>

@@ -16,6 +16,7 @@ import Link from 'next/link'
 import { apiClient, Product, Category } from '@/lib/api'
 import { useProducts } from '@/contexts/ProductsContext'
 import ProductCard from './ProductCard'
+import ProductsByCategory from './ProductsByCategory'
 
 interface Banner {
   _id: string
@@ -263,6 +264,9 @@ export default function NewHomepage() {
           </div>
         </section>
       )}
+
+      {/* Category Products Section - Dynamic rows for all categories */}
+      <ProductsByCategory showHeader={false} productsPerCategory={8} />
 
       {/* New Arrivals */}
       {newArrivals.length > 0 && (

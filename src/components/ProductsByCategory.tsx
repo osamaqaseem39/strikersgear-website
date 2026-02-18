@@ -180,29 +180,18 @@ export default function ProductsByCategory({
             >
               {/* Category Header */}
               <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                  {item.category.image && (
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-100">
-                      <img
-                        src={item.category.image}
-                        alt={item.category.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
+                <div>
+                  <h3 className="text-2xl lg:text-3xl font-serif font-bold text-gray-900">
+                    Our {item.category.name} Collection
+                  </h3>
+                  {item.category.description && (
+                    <p className="text-sm text-gray-600 mt-1">
+                      {item.category.description}
+                    </p>
                   )}
-                  <div>
-                    <h3 className="text-2xl font-serif font-bold text-gray-900">
-                      {item.category.name}
-                    </h3>
-                    {item.category.description && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {item.category.description}
-                      </p>
-                    )}
-                  </div>
                 </div>
                 <Link
-                  href={`/categories/${item.category.slug}`}
+                  href={`/shop?category=${item.category.slug || item.category._id}`}
                   className="flex items-center gap-2 text-primary-600 hover:text-primary-700 font-medium transition-colors"
                 >
                   View All
