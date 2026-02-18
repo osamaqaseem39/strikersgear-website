@@ -230,7 +230,7 @@ export default function MobileProductPage() {
         </div>
       </div>
 
-      {/* Product Images - Mobile Optimized - 1:1 Container */}
+      {/* Product Images - Mobile Optimized - 1:1 Container and Image */}
       <div className="relative bg-white">
         <div className="relative aspect-square bg-gray-100">
           {isExternalUrl ? (
@@ -238,7 +238,7 @@ export default function MobileProductPage() {
               src={mainImageUrl}
               alt={product.name || 'Product'}
               fill
-              className="object-cover w-full h-full"
+              className="object-contain aspect-square"
               unoptimized={true}
               sizes="100vw"
             />
@@ -246,7 +246,7 @@ export default function MobileProductPage() {
             <img
               src={mainImageUrl}
               alt={product.name || 'Product'}
-              className="absolute inset-0 w-full h-full object-cover"
+              className="absolute inset-0 w-full h-full object-contain aspect-square"
               onError={(e) => {
                 e.currentTarget.src = '/images/1.png'
               }}
@@ -317,7 +317,7 @@ export default function MobileProductPage() {
                         src={imageUrl}
                         alt={`${product.name} ${index + 1}`}
                         fill
-                        className="object-cover"
+                        className="object-contain aspect-square"
                         unoptimized
                         sizes="80px"
                       />
@@ -325,7 +325,7 @@ export default function MobileProductPage() {
                       <img
                         src={imageUrl}
                         alt={`${product.name} ${index + 1}`}
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-contain aspect-square"
                         onError={(e) => { e.currentTarget.src = '/images/1.png' }}
                       />
                     )}

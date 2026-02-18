@@ -286,9 +286,9 @@ export default function ProductPage() {
                               }`}
                             >
                               {isExt ? (
-                                <Image src={imageUrl} alt="" fill className="object-cover" unoptimized sizes="80px" />
+                                <Image src={imageUrl} alt="" fill className="object-contain aspect-square" unoptimized sizes="80px" />
                               ) : (
-                                <img src={imageUrl} alt="" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = '/images/1.png' }} />
+                                <img src={imageUrl} alt="" className="w-full h-full object-contain aspect-square" onError={(e) => { e.currentTarget.src = '/images/1.png' }} />
                               )}
                             </button>
                           )
@@ -296,7 +296,7 @@ export default function ProductPage() {
                       </div>
                     )}
 
-                    {/* Main Image Slider - 1:1 Container */}
+                    {/* Main Image Slider - 1:1 Container and Image */}
                     <div className="relative aspect-square bg-white rounded-xl overflow-hidden shadow-lg border border-gray-100 flex-1 order-1 sm:order-2 min-h-[280px] sm:min-h-0">
                       <div key={selectedImage} className="absolute inset-0">
                         {isExternalUrl ? (
@@ -304,7 +304,7 @@ export default function ProductPage() {
                             src={imageSrc}
                             alt={product.name || 'Product'}
                             fill
-                            className="object-cover transition-opacity duration-300"
+                            className="object-contain aspect-square transition-opacity duration-300"
                             unoptimized
                             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                           />
@@ -312,7 +312,7 @@ export default function ProductPage() {
                           <img
                             src={imageSrc}
                             alt={product.name || 'Product'}
-                            className="absolute inset-0 w-full h-full object-cover transition-opacity duration-300"
+                            className="absolute inset-0 w-full h-full object-contain aspect-square transition-opacity duration-300"
                             onError={(e) => { e.currentTarget.src = '/images/1.png' }}
                           />
                         )}
