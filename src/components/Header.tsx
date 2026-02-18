@@ -161,12 +161,9 @@ export default function Header({ onMenuClick, isMobileMenuOpen, onFilterClick }:
 
             {/* Right side controls */}
             <div className="flex items-center space-x-4">
-              {/* Delivery/Currency */}
+              {/* Delivery */}
               <div className="flex items-center space-x-2 text-sm text-gray-600">
                 <span>Deliver To</span>
-                <ChevronDown className="h-4 w-4" />
-                <span className="mx-2">|</span>
-                <span>Currency</span>
                 <ChevronDown className="h-4 w-4" />
               </div>
 

@@ -70,6 +70,7 @@ export default function TrendingProducts() {
                   isNew={product.isNew}
                   isOnSale={product.isSale}
                   slug={product.slug}
+                  availableSizes={product.availableSizes}
                 />
               </motion.div>
             ))}

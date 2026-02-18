@@ -17,6 +17,7 @@ interface ProductCardProps {
   isNew?: boolean
   isOnSale?: boolean
   slug?: string
+  availableSizes?: string[]
 }
 
 export default function ProductCard({
@@ -30,7 +31,8 @@ export default function ProductCard({
   color,
   isNew = false,
   isOnSale = false,
-  slug
+  slug,
+  availableSizes
 }: ProductCardProps) {
   return (
     <Link href={slug ? `/products/${slug}` : `/products/${id}`}>
@@ -94,6 +96,27 @@ export default function ProductCard({
               <span className="text-[10px] sm:text-xs text-gray-500 flex-shrink-0 hidden sm:inline">{brand}</span>
             )}
           </div>
+
+          {/* Sizes */}
+          {availableSizes && availableSizes.length > 0 && (
+            <div className="mb-1.5">
+              <div className="flex flex-wrap gap-1">
+                {availableSizes.slice(0, 4).map((size, idx) => (
+                  <span
+                    key={idx}
+                    className="text-[9px] sm:text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200"
+                  >
+                    {size}
+                  </span>
+                ))}
+                {availableSizes.length > 4 && (
+                  <span className="text-[9px] sm:text-[10px] px-1.5 py-0.5 text-gray-500">
+                    +{availableSizes.length - 4}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Price and Add to Cart in one line */}
           <div className="flex items-center justify-between gap-1 sm:gap-2">

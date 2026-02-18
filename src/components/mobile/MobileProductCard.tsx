@@ -19,6 +19,7 @@ interface MobileProductCardProps {
   slug?: string
   rating?: number
   reviews?: number
+  availableSizes?: string[]
 }
 
 export default function MobileProductCard({
@@ -34,7 +35,8 @@ export default function MobileProductCard({
   isOnSale = false,
   slug,
   rating,
-  reviews
+  reviews,
+  availableSizes
 }: MobileProductCardProps) {
   return (
     <Link href={slug ? `/products/${slug}` : `/products/${id}`}>
@@ -102,6 +104,27 @@ export default function MobileProductCard({
           {/* Brand */}
           {brand && (
             <p className="text-[10px] text-gray-500 mb-1 truncate">{brand}</p>
+          )}
+
+          {/* Sizes */}
+          {availableSizes && availableSizes.length > 0 && (
+            <div className="mb-1.5">
+              <div className="flex flex-wrap gap-1">
+                {availableSizes.slice(0, 3).map((size, idx) => (
+                  <span
+                    key={idx}
+                    className="text-[9px] px-1 py-0.5 bg-gray-100 text-gray-700 rounded border border-gray-200"
+                  >
+                    {size}
+                  </span>
+                ))}
+                {availableSizes.length > 3 && (
+                  <span className="text-[9px] px-1 py-0.5 text-gray-500">
+                    +{availableSizes.length - 3}
+                  </span>
+                )}
+              </div>
+            </div>
           )}
 
           {/* Rating - Compact */}

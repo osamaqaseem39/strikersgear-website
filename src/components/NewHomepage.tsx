@@ -184,6 +184,7 @@ export default function NewHomepage() {
                     isNew={product.isNew}
                     isOnSale={product.isSale}
                     slug={product.slug}
+                    availableSizes={product.availableSizes}
                   />
                 </motion.div>
               ))}
@@ -313,6 +314,7 @@ export default function NewHomepage() {
                     isNew={product.isNew}
                     isOnSale={product.isSale}
                     slug={product.slug}
+                    availableSizes={product.availableSizes}
                   />
                 </motion.div>
               ))}
@@ -363,6 +365,7 @@ export default function NewHomepage() {
                     isNew={product.isNew}
                     isOnSale={product.isSale}
                     slug={product.slug}
+                    availableSizes={product.availableSizes}
                   />
                 </motion.div>
               ))}
@@ -448,6 +451,7 @@ export default function NewHomepage() {
                     isNew={product.isNew}
                     isOnSale={product.isSale}
                     slug={product.slug}
+                    availableSizes={product.availableSizes}
                   />
                 </motion.div>
               ))}

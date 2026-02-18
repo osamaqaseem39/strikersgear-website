@@ -244,6 +244,7 @@ const PersonalizedRecommendations: React.FC<PersonalizedRecommendationsProps> = 
                 isNew={product.isNew}
                 isOnSale={product.isSale}
                 slug={product.slug}
+                availableSizes={product.availableSizes}
               />
             </div>
           ))}

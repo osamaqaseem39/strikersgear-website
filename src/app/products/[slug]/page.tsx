@@ -92,13 +92,46 @@ export default function ProductPage() {
     }
   }, [product?._id, slug, addToRecentlyViewed, trackProductView]) // Include all dependencies
 
-  // Auto-select "One Size" when product has no size options
+  // Auto-select size and color when there's only one option
   useEffect(() => {
     if (!product) return
-    const hasSizes = (Array.isArray(product.availableSizes) && product.availableSizes.length > 0) ||
-      (product.sizeChart && Array.isArray(product.sizeChart?.sizes) && product.sizeChart.sizes.length > 0) ||
-      (Array.isArray((product as any).attributes?.sizes) && (product as any).attributes.sizes.length > 0)
-    if (!hasSizes) setSelectedSize('One Size')
+    
+    // Handle sizes
+    let sizes: string[] = []
+    if (Array.isArray(product.availableSizes) && product.availableSizes.length > 0) {
+      sizes = product.availableSizes
+    } else if (product.sizeChart && Array.isArray(product.sizeChart?.sizes) && product.sizeChart.sizes.length > 0) {
+      sizes = product.sizeChart.sizes.map((s: any) => s.size || s).filter(Boolean)
+    } else if (Array.isArray((product as any).attributes?.sizes) && (product as any).attributes.sizes.length > 0) {
+      sizes = (product as any).attributes.sizes
+    }
+    
+    // Auto-select if there's exactly one size (or no sizes, default to "One Size")
+    if (sizes.length === 0) {
+      setSelectedSize('One Size')
+    } else if (sizes.length === 1) {
+      setSelectedSize(sizes[0])
+    }
+    
+    // Handle colors
+    const colors = Array.isArray((product as any).colors) ? (product as any).colors : []
+    if (colors.length > 0) {
+      // Extract color labels
+      const colorLabels = colors
+        .map((c: any) => {
+          const isObjectId = (s: string) => /^[a-f\d]{24}$/i.test(s)
+          if (typeof c === 'string') {
+            return isObjectId(c) ? null : c
+          }
+          return c.name || c.colorName || c.label || c.title || (!isObjectId(String(c?.colorId)) ? String(c?.colorId) : null)
+        })
+        .filter(Boolean)
+      
+      // Auto-select if there's exactly one color
+      if (colorLabels.length === 1) {
+        setSelectedColor(colorLabels[0])
+      }
+    }
   }, [product])
 
   if (loading) {
@@ -415,7 +448,7 @@ export default function ProductPage() {
                             <button
                               key={size}
                               type="button"
-                              onClick={() => setSelectedSize(size)}
+                              onClick={() => setSelectedSize(selectedSize === size ? '' : size)}
                               className={`px-5 py-2.5 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 selectedSize === size
                                   ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-sm'
@@ -445,7 +478,7 @@ export default function ProductPage() {
                           return (
                             <button
                               key={label + idx}
-                              onClick={() => setSelectedColor(label)}
+                              onClick={() => setSelectedColor(selectedColor === label ? '' : label)}
                               className={`flex items-center gap-2 px-4 py-2.5 border-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                                 selectedColor === label
                                   ? 'border-primary-600 bg-primary-50 text-primary-700 shadow-sm'

@@ -82,16 +82,27 @@ export default function Hero() {
     fetchBanners()
   }, [])
 
-  // Auto-play functionality
+  // Auto-play functionality - rotates banners automatically
   useEffect(() => {
-    if (!isAutoPlaying || banners.length === 0) return
+    if (!isAutoPlaying || banners.length <= 1) return
 
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % banners.length)
-    }, 5000) // Change slide every 5 seconds
+    }, 4000) // Change slide every 4 seconds
 
     return () => clearInterval(interval)
   }, [isAutoPlaying, banners.length])
+
+  // Resume auto-play after 10 seconds of user inactivity
+  useEffect(() => {
+    if (isAutoPlaying) return
+
+    const timeout = setTimeout(() => {
+      setIsAutoPlaying(true)
+    }, 10000) // Resume auto-play after 10 seconds
+
+    return () => clearTimeout(timeout)
+  }, [isAutoPlaying])
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % banners.length)
@@ -157,21 +168,25 @@ export default function Hero() {
         </AnimatePresence>
       </div>
 
-      {/* Navigation Arrows */}
-      <button
-        onClick={prevSlide}
-        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-2 sm:p-3 transition-all duration-300 group"
-        aria-label="Previous slide"
-      >
-        <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-110 transition-transform" />
-      </button>
-      <button
-        onClick={nextSlide}
-        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/20 hover:bg-white/30 backdrop-blur-sm rounded-full p-2 sm:p-3 transition-all duration-300 group"
-        aria-label="Next slide"
-      >
-        <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-110 transition-transform" />
-      </button>
+      {/* Navigation Arrows - Always visible */}
+      {banners.length > 1 && (
+        <>
+          <button
+            onClick={prevSlide}
+            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-20 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded-full p-2 sm:p-3 transition-all duration-300 group shadow-lg"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-110 transition-transform" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-20 bg-white/30 hover:bg-white/50 backdrop-blur-sm rounded-full p-2 sm:p-3 transition-all duration-300 group shadow-lg"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-white group-hover:scale-110 transition-transform" />
+          </button>
+        </>
+      )}
 
       {/* Dot Indicators */}
       <div className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">

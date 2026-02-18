@@ -442,6 +442,7 @@ export default function ProductsPage() {
                       isNew={new Date(product.createdAt).getTime() > Date.now() - 7 * 24 * 60 * 60 * 1000}
                       isOnSale={!!product.originalPrice && product.originalPrice > product.price}
                       slug={product.slug}
+                      availableSizes={product.availableSizes}
                     />
                   </motion.div>
                 ))} 
