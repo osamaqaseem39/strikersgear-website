@@ -76,8 +76,12 @@ export default function MobileNewHomepage() {
 
   return (
     <div className="min-h-screen bg-white">
-      {/* Hero Section - Slider Only */}
-      <MobileHero />
+      {/* Hero Section - Contained width on mobile */}
+      <section className="w-full px-4 pt-4">
+        <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-xl">
+          <MobileHero />
+        </div>
+      </section>
 
 
 
