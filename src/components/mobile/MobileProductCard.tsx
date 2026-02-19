@@ -109,7 +109,8 @@ export default function MobileProductCard({
           {/* Sizes */}
           {availableSizes && availableSizes.length > 0 && (
             <div className="mb-1.5">
-              <div className="flex flex-wrap gap-1">
+              <span className="text-[9px] text-gray-600 font-medium mr-1">Size:</span>
+              <div className="flex flex-wrap gap-1 inline-flex">
                 {availableSizes.slice(0, 3).map((size, idx) => (
                   <span
                     key={idx}
