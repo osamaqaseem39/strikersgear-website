@@ -318,8 +318,9 @@ class ApiClient {
     const limit = filters.limit ?? 100
 
     // Backend supports categoryId & activeOnly; for now we just request active products
-    const raw = await this.request<any[]>(`/products?activeOnly=true`)
-    const all = Array.isArray(raw) ? raw.map(this.normalizeProduct) : []
+    const raw = await this.request<any>(`/products?activeOnly=true`)
+    const rawArray = Array.isArray(raw) ? raw : (raw?.data && Array.isArray(raw.data) ? raw.data : [])
+    const all = rawArray.map((item: any) => this.normalizeProduct(item))
 
     const total = all.length
     const totalPages = total > 0 ? Math.ceil(total / limit) : 1

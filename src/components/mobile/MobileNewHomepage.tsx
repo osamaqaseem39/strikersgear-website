@@ -37,11 +37,13 @@ export default function MobileNewHomepage() {
     fetchData()
   }, [])
 
+  // Derived product lists (order matters - used below)
   const featuredProducts = allProducts
     .filter(product =>
       (product.rating && product.rating >= 4.5) ||
       product.isNew === true ||
-      product.isSale === true
+      product.isSale === true ||
+      (product.rating && product.rating >= 4.0)
     )
     .slice(0, 4)
 
@@ -52,9 +54,12 @@ export default function MobileNewHomepage() {
   const trendingProducts = allProducts
     .filter(product =>
       (product.reviews && product.reviews >= 10) ||
-      (product.rating && product.rating >= 4.0)
+      (product.rating && product.rating >= 4.0) ||
+      (product.reviews && product.reviews >= 5)
     )
     .slice(0, 4)
+
+  const allProductsToShow = allProducts.slice(0, 8)
 
   if (loading || productsLoading) {
     return (
@@ -77,13 +82,77 @@ export default function MobileNewHomepage() {
   return (
     <div className="min-h-screen bg-white">
       {/* Hero Section - Contained width on mobile */}
-      <section className="w-full px-4 pt-4">
+      <section className="w-full px-4">
         <div className="mx-auto w-full max-w-4xl overflow-hidden rounded-xl">
           <MobileHero />
         </div>
       </section>
 
 
+
+      {/* Our Products - Always show when we have products */}
+      {allProductsToShow.length > 0 && (
+        <section className="py-8 bg-gray-50">
+          <div className="px-4">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4 }}
+              className="text-center mb-6"
+            >
+              <div className="flex items-center justify-center gap-2 mb-2">
+                <ShoppingBag className="h-5 w-5 text-primary-600" />
+                <h2 className="text-xl font-serif font-bold text-gray-900">
+                  Our Products
+                </h2>
+              </div>
+              <p className="text-sm text-gray-600">
+                Explore our collection
+              </p>
+            </motion.div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {allProductsToShow.map((product, index) => (
+                <motion.div
+                  key={product._id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: index * 0.05 }}
+                >
+                  <MobileProductCard
+                    id={product._id}
+                    name={product.name}
+                    price={product.price}
+                    originalPrice={product.originalPrice}
+                    image={(Array.isArray(product.images) && product.images.length > 0 && product.images[0]) || product.featuredImage || '/images/1.png'}
+                    category={product.categories?.[0] || product.category || 'General'}
+                    brand={product.brand}
+                    isNew={product.isNew}
+                    isOnSale={product.isSale}
+                    slug={product.slug}
+                    rating={product.rating}
+                    reviews={product.reviews}
+                  />
+                </motion.div>
+              ))}
+            </div>
+
+            {allProducts.length > 8 && (
+              <div className="text-center mt-6">
+                <Link
+                  href="/shop"
+                  className="inline-flex items-center justify-center px-6 py-3 bg-primary-600 text-white rounded-lg font-semibold text-sm active:bg-primary-700 transition-colors"
+                >
+                  View All Products
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </div>
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Categories Section */}
       {categories.length > 0 && (
@@ -188,7 +257,7 @@ export default function MobileNewHomepage() {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    image={product.images[0] || '/images/1.png'}
+                    image={(Array.isArray(product.images) && product.images.length > 0 && product.images[0]) || product.featuredImage || '/images/1.png'}
                     category={product.categories?.[0] || product.category || 'General'}
                     brand={product.brand}
                     isNew={product.isNew}
@@ -240,7 +309,7 @@ export default function MobileNewHomepage() {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    image={product.images[0] || '/images/1.png'}
+                    image={(Array.isArray(product.images) && product.images.length > 0 && product.images[0]) || product.featuredImage || '/images/1.png'}
                     category={product.categories?.[0] || product.category || 'General'}
                     brand={product.brand}
                     isNew={product.isNew}
@@ -327,7 +396,7 @@ export default function MobileNewHomepage() {
                     name={product.name}
                     price={product.price}
                     originalPrice={product.originalPrice}
-                    image={product.images[0] || '/images/1.png'}
+                    image={(Array.isArray(product.images) && product.images.length > 0 && product.images[0]) || product.featuredImage || '/images/1.png'}
                     category={product.categories?.[0] || product.category || 'General'}
                     brand={product.brand}
                     isNew={product.isNew}
