@@ -24,12 +24,22 @@ const manrope = Manrope({
   weight: ['300', '400', '500', '600', '700'],
 })
 
+const SITE_URL = 'https://www.strikergear.pk'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'Strikers Gear - Football Cleats & Sports Accessories',
   description:
     'Strikers Gear is your football-focused sports shop for premium cleats, grip socks and grippers, football jerseys, shin pads, and performance socks.',
   icons: {
     icon: '/favicon.ico',
+  },
+  openGraph: {
+    url: SITE_URL,
+    siteName: 'Strikers Gear',
+  },
+  alternates: {
+    canonical: SITE_URL,
   },
 }
 
